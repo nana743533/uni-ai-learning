@@ -84,7 +84,7 @@ export default function LectureDocsTab() {
                 key={lec.id}
                 onClick={() => setSelectedLectureId(lec.id)}
                 className={cn(
-                  "flex flex-col items-center px-3 py-1.5 rounded-lg border text-center shrink-0 transition-all",
+                  "flex items-center justify-center px-3 py-1.5 rounded-lg border shrink-0 transition-all",
                   selectedLectureId === lec.id
                     ? "bg-primary text-primary-foreground border-primary shadow-sm"
                     : lec.status === "upcoming"
@@ -93,17 +93,11 @@ export default function LectureDocsTab() {
                 )}
               >
                 <span className={cn(
-                  "text-[10px] font-bold font-['Inter']",
+                  "text-xs font-bold font-['Inter']",
                   selectedLectureId === lec.id ? "text-primary-foreground" : ""
                 )}>
-                  第{lec.number}回
+                  {lec.number}
                 </span>
-                {lec.status === "current" && selectedLectureId !== lec.id && (
-                  <span className="text-[8px] text-amber-500 font-medium">今回</span>
-                )}
-                {lec.status === "upcoming" && (
-                  <Lock className="w-2.5 h-2.5 mt-0.5 opacity-60" />
-                )}
               </button>
             ))}
           </div>
@@ -117,33 +111,7 @@ export default function LectureDocsTab() {
           </button>
         </div>
 
-        {/* Selected lecture info */}
-        <div className="mt-2.5 flex items-center gap-2">
-          <div className={cn(
-            "w-5 h-5 rounded-full flex items-center justify-center shrink-0",
-            selectedLecture.status === "current" ? "bg-amber-100" :
-            selectedLecture.status === "completed" ? "bg-primary/10" : "bg-muted"
-          )}>
-            <span className={cn(
-              "text-[9px] font-bold font-['Inter']",
-              selectedLecture.status === "current" ? "text-amber-600" :
-              selectedLecture.status === "completed" ? "text-primary" : "text-muted-foreground"
-            )}>
-              {selectedLecture.number}
-            </span>
-          </div>
-          <p className="text-sm font-semibold text-foreground">{selectedLecture.title}</p>
-          {selectedLecture.status === "current" && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-600 border border-amber-200 ml-auto shrink-0">
-              今回
-            </span>
-          )}
-          {selectedLecture.status === "upcoming" && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded bg-muted text-muted-foreground ml-auto shrink-0">
-              未公開
-            </span>
-          )}
-        </div>
+
       </div>
 
       {/* ── コンテンツ ───────────────────────────────────── */}

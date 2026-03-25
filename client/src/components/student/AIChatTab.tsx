@@ -319,10 +319,7 @@ export default function AIChatTab() {
   const handleCreateSession = (ids: number[]) => {
     setShowModal(false);
     const selectedLectures = lectures.filter((l) => ids.includes(l.id));
-    const title =
-      selectedLectures.length === 1
-        ? `第${selectedLectures[0].number}回 相談`
-        : `第${selectedLectures.map((l) => l.number).join("・")}回 相談`;
+    const title = "無題";
     const newSession: ChatSession = {
       id: Date.now(),
       title,

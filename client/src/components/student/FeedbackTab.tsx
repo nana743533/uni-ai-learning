@@ -2,24 +2,20 @@
 // FeedbackTab — 感想・要望タブ（学生向け・全授業共通）
 // Design: Academic Clarity
 // Features:
-//   - 授業回を選択して感想を送信
-//   - 複数回への感想を一度に送れる
+//   - 授業回選択なし（全授業共通フォーム）
+//   - 星評価・コメント・クイックタグ
 //   - 匿名送信
 // ============================================================
 import { useState } from "react";
-import { Star, Send, ChevronDown } from "lucide-react";
+import { Star, Send } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { lectures } from "@/lib/mockData";
 
 export default function FeedbackTab() {
-  const [selectedLectureId, setSelectedLectureId] = useState<number>(1);
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [comment, setComment] = useState("");
   const [submitted, setSubmitted] = useState(false);
-
-  const selectedLecture = lectures.find((l) => l.id === selectedLectureId) ?? lectures[0];
 
   const handleSubmit = () => {
     if (rating === 0) {
@@ -44,7 +40,7 @@ export default function FeedbackTab() {
           onClick={() => { setSubmitted(false); setRating(0); setComment(""); }}
           className="mt-6 px-4 py-2 text-sm font-medium text-primary border border-primary/30 rounded-lg hover:bg-primary/5 transition-colors"
         >
-          別の回の感想を送る
+          別の感想を送る
         </button>
       </div>
     );
@@ -55,34 +51,12 @@ export default function FeedbackTab() {
       <div className="max-w-lg mx-auto">
         <h3 className="text-base font-bold text-foreground mb-1">感想・要望</h3>
         <p className="text-xs text-muted-foreground mb-6">
-          匿名で教授に送信されます。どの回についての感想かを選んでください。
+          匿名で教授に送信されます。
         </p>
-
-        {/* Lecture Selector */}
-        <div className="mb-6">
-          <p className="text-sm font-semibold text-foreground mb-2">対象の授業回</p>
-          <div className="relative">
-            <select
-              value={selectedLectureId}
-              onChange={(e) => setSelectedLectureId(Number(e.target.value))}
-              className="w-full appearance-none px-3 py-2.5 text-sm bg-card border border-border rounded-lg outline-none focus:border-primary/50 focus:ring-1 focus:ring-primary/20 transition-all pr-9"
-            >
-              {lectures.map((l) => (
-                <option key={l.id} value={l.id}>
-                  第{l.number}回 — {l.title}
-                  {l.status === "current" ? "（今回）" : ""}
-                </option>
-              ))}
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" />
-          </div>
-        </div>
 
         {/* Rating */}
         <div className="mb-6">
-          <p className="text-sm font-semibold text-foreground mb-3">
-            第{selectedLecture.number}回の満足度
-          </p>
+          <p className="text-sm font-semibold text-foreground mb-3">満足度</p>
           <div className="flex gap-2">
             {[1, 2, 3, 4, 5].map((star) => (
               <button
