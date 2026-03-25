@@ -1,24 +1,20 @@
 // ============================================================
 // StudentView — 学生向けメインビュー
 // Design: Academic Clarity
-// Tabs: AI相談 | みんなのQ&A | 講義資料・知識 | 授業の情報 | 感想・要望
+// Tabs: AI相談 | みんなのQ&A | 講義資料・知識
 // ============================================================
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import AIChatTab from "./AIChatTab";
 import CommunityQATab from "./CommunityQATab";
 import LectureDocsTab from "./LectureDocsTab";
-import FeedbackTab from "./FeedbackTab";
-import CourseInfoTab from "./CourseInfoTab";
 
-type StudentTab = "ai-chat" | "community-qa" | "lecture-docs" | "course-info" | "feedback";
+type StudentTab = "ai-chat" | "community-qa" | "lecture-docs";
 
 const tabs: { id: StudentTab; label: string }[] = [
   { id: "ai-chat", label: "AI相談" },
   { id: "community-qa", label: "みんなのQ&A" },
   { id: "lecture-docs", label: "講義資料・知識" },
-  { id: "course-info", label: "授業の情報" },
-  { id: "feedback", label: "感想・要望" },
 ];
 
 export default function StudentView() {
@@ -64,8 +60,6 @@ export default function StudentView() {
         {activeTab === "ai-chat" && <AIChatTab />}
         {activeTab === "community-qa" && <CommunityQATab />}
         {activeTab === "lecture-docs" && <LectureDocsTab />}
-        {activeTab === "course-info" && <CourseInfoTab />}
-        {activeTab === "feedback" && <FeedbackTab />}
       </div>
     </div>
   );
