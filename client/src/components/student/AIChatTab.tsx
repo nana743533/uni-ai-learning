@@ -320,7 +320,7 @@ export default function AIChatTab() {
     };
     setSessions((prev) => [newSession, ...prev]);
     setActiveSessionId(newSession.id);
-    setShowSettings(true); // 新規作成時は設定パネルを自動で開く
+    // 設定パネルはデフォルトで閉じた状態
   };
 
   const addAIMessage = (content: string) => {
