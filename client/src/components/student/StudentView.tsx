@@ -1,7 +1,7 @@
 // ============================================================
 // StudentView — 学生向けメインビュー
 // Design: Academic Clarity
-// Tabs: AI相談 | みんなのQ&A | 講義資料・知識 | 感想・要望
+// Tabs: AI相談 | みんなのQ&A | 授業の情報 | 感想・要望
 // ============================================================
 import { useState } from "react";
 import { cn } from "@/lib/utils";
@@ -10,13 +10,15 @@ import AIChatTab from "./AIChatTab";
 import CommunityQATab from "./CommunityQATab";
 import LectureDocsTab from "./LectureDocsTab";
 import FeedbackTab from "./FeedbackTab";
+import CourseInfoTab from "./CourseInfoTab";
 
-type StudentTab = "ai-chat" | "community-qa" | "lecture-docs" | "feedback";
+type StudentTab = "ai-chat" | "community-qa" | "lecture-docs" | "course-info" | "feedback";
 
 const tabs: { id: StudentTab; label: string }[] = [
   { id: "ai-chat", label: "AI相談" },
   { id: "community-qa", label: "みんなのQ&A" },
   { id: "lecture-docs", label: "講義資料・知識" },
+  { id: "course-info", label: "授業の情報" },
   { id: "feedback", label: "感想・要望" },
 ];
 
@@ -41,13 +43,13 @@ export default function StudentView({ lectureId }: { lectureId: number }) {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-0">
+        <div className="flex gap-0 overflow-x-auto">
           {tabs.map((tab) => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               className={cn(
-                "relative px-4 py-2.5 text-sm font-medium transition-colors border-b-2",
+                "relative px-4 py-2.5 text-sm font-medium transition-colors border-b-2 whitespace-nowrap shrink-0",
                 activeTab === tab.id
                   ? "text-primary border-primary"
                   : "text-muted-foreground border-transparent hover:text-foreground hover:border-border"
@@ -61,10 +63,11 @@ export default function StudentView({ lectureId }: { lectureId: number }) {
 
       {/* Tab Content */}
       <div className="flex-1 overflow-hidden flex flex-col">
-        {activeTab === "ai-chat" && <AIChatTab lectureTitle={lecture.title} />}
-        {activeTab === "community-qa" && <CommunityQATab lectureTitle={lecture.title} />}
+        {activeTab === "ai-chat" && <AIChatTab />}
+        {activeTab === "community-qa" && <CommunityQATab />}
         {activeTab === "lecture-docs" && <LectureDocsTab lectureTitle={lecture.title} />}
-        {activeTab === "feedback" && <FeedbackTab lectureTitle={lecture.title} />}
+        {activeTab === "course-info" && <CourseInfoTab />}
+        {activeTab === "feedback" && <FeedbackTab />}
       </div>
     </div>
   );
