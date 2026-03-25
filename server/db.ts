@@ -130,3 +130,41 @@ export async function updateDocumentAiEnabled(id: number, aiEnabled: "on" | "off
   if (!db) throw new Error("Database not available");
   return db.update(documents).set({ aiEnabled }).where(eq(documents.id, id));
 }
+
+export async function updateDocumentExtractedText(id: number, extractedText: string) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.update(documents).set({ extractedText }).where(eq(documents.id, id));
+}
+
+/**
+ * 指定の授業回の「aiEnabled=on」資料のテキストを取得（RAG用）
+ * selectedLecturesが空の場合は全資料を返す
+ */
+export async function getRagContext(selectedLectures: number[]): Promise<string> {
+  const db = await getDb();
+  if (!db) return "";
+
+  const { inArray } = await import("drizzle-orm");
+  const { and } = await import("drizzle-orm");
+
+  let rows;
+  if (selectedLectures.length > 0) {
+    rows = await db
+      .select({ title: documents.title, lectureNumber: documents.lectureNumber, extractedText: documents.extractedText })
+      .from(documents)
+      .where(and(eq(documents.aiEnabled, "on"), inArray(documents.lectureNumber, selectedLectures)));
+  } else {
+    rows = await db
+      .select({ title: documents.title, lectureNumber: documents.lectureNumber, extractedText: documents.extractedText })
+      .from(documents)
+      .where(eq(documents.aiEnabled, "on"));
+  }
+
+  if (rows.length === 0) return "";
+
+  return rows
+    .filter(r => r.extractedText && r.extractedText.trim().length > 0)
+    .map(r => `=== 第${r.lectureNumber}回講義資料：${r.title} ===\n${r.extractedText}`)
+    .join("\n\n");
+}

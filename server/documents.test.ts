@@ -80,4 +80,24 @@ describe("documents — CRUD helpers", () => {
     await updateDocumentAiEnabled(1, "off");
     expect(updateDocumentAiEnabled).toHaveBeenCalledWith(1, "off");
   });
+
+  it("insertDocument accepts extractedText for RAG", async () => {
+    await insertDocument({
+      lectureNumber: 4,
+      title: "第4回 AIと倫理",
+      fileType: "pdf",
+      fileKey: "documents/lecture-4/abc-ai-ethics.pdf",
+      fileUrl: "https://cdn.example.com/documents/lecture-4/abc-ai-ethics.pdf",
+      fileSize: 110000,
+      aiEnabled: "on",
+      uploadedBy: "prof001",
+      extractedText: "AIバイアスとは、訓練データの偏りによりAIが不公平な判断を下す現象です。",
+    });
+    expect(insertDocument).toHaveBeenCalledWith(
+      expect.objectContaining({
+        lectureNumber: 4,
+        extractedText: expect.stringContaining("AIバイアス"),
+      })
+    );
+  });
 });

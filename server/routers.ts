@@ -11,7 +11,25 @@ import {
   getDocumentsByLecture,
   deleteDocument,
   updateDocumentAiEnabled,
+  updateDocumentExtractedText,
+  getRagContext,
 } from "./db";
+import { PDFParse } from "pdf-parse";
+import { invokeLLM } from "./_core/llm";
+
+// ── PDFテキスト抽出ヘルパー ──────────────────────────────────────────────────
+async function extractPdfText(buffer: Buffer): Promise<string> {
+  try {
+    const parser = new PDFParse({ data: buffer });
+    const result = await parser.getText();
+    // 各ページのテキストを連結し、長すぎる場合は先頭8000文字に取る（トークン節約）
+    const text = result.pages.map((p: { text: string }) => p.text).join("\n");
+    return text.slice(0, 8000);
+  } catch (e) {
+    console.warn("[PDF] Text extraction failed:", e);
+    return "";
+  }
+}
 
 // ── Gemini API helper ──────────────────────────────────────────────────────
 async function callGemini(systemPrompt: string, messages: { role: "user" | "model"; parts: { text: string }[] }[]) {
@@ -102,7 +120,18 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ input }) => {
+        // 選択された授業回の数値リストを作成
+        const selectedNums = input.selectedLectures
+          ? input.selectedLectures.map(s => parseInt(s, 10)).filter(n => !isNaN(n))
+          : [];
+
+        // RAGコンテキストをDBから取得
+        const ragContext = await getRagContext(selectedNums);
+
         let contextPrompt = SYSTEM_PROMPT;
+        if (ragContext) {
+          contextPrompt += `\n\n【授業資料コンテキスト（必ずこの内容を优先して回答すること）】\n${ragContext}`;
+        }
         if (input.selectedLectures && input.selectedLectures.length > 0) {
           contextPrompt += `\n\n【現在の参照対象授業回】\n${input.selectedLectures.join("、")}`;
         } else {
@@ -114,7 +143,26 @@ export const appRouter = router({
           parts: [{ text: m.content }],
         }));
 
-        const reply = await callGemini(contextPrompt, geminiMessages);
+        let reply: string;
+        try {
+          reply = await callGemini(contextPrompt, geminiMessages);
+        } catch (geminiErr: unknown) {
+          const errMsg = String(geminiErr);
+          const isQuotaError = errMsg.includes("429") || errMsg.includes("RESOURCE_EXHAUSTED") || errMsg.includes("quota");
+          if (!isQuotaError) throw geminiErr;
+
+          // Geminiクォータ超過時はinvokeLLMにフォールバック
+          console.warn("[Chat] Gemini quota exceeded, falling back to invokeLLM");
+          const fallbackMessages = [
+            { role: "system" as const, content: contextPrompt },
+            ...input.messages.map((m) => ({
+              role: m.role === "model" ? "assistant" as const : "user" as const,
+              content: m.content,
+            })),
+          ];
+          const fallbackRes = await invokeLLM({ messages: fallbackMessages });
+          reply = (fallbackRes as { choices: { message: { content: string } }[] }).choices[0]?.message?.content ?? "";
+        }
         return { reply };
       }),
 
@@ -167,6 +215,12 @@ export const appRouter = router({
         const fileKey = `documents/lecture-${input.lectureNumber}/${randomSuffix}-${input.fileName}`;
         const { url } = await storagePut(fileKey, buffer, mimeType);
 
+        // PDFの場合はテキストを抽出
+        let extractedText: string | undefined;
+        if (fileType === "pdf") {
+          extractedText = await extractPdfText(buffer);
+        }
+
         // DBに保存
         await insertDocument({
           lectureNumber: input.lectureNumber,
@@ -177,6 +231,7 @@ export const appRouter = router({
           fileSize: input.fileSize ?? buffer.length,
           aiEnabled: input.aiEnabled,
           uploadedBy: ctx.user?.openId ?? null,
+          extractedText: extractedText ?? null,
         });
 
         return { success: true, url };

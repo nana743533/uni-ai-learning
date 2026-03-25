@@ -47,6 +47,8 @@ export const documents = mysqlTable("documents", {
   fileSize: int("fileSize"),
   /** AIナレッジ対象かどうか */
   aiEnabled: mysqlEnum("aiEnabled", ["on", "off"]).default("on").notNull(),
+  /** PDFから抽出したテキスト（RAG用） */
+  extractedText: text("extractedText"),
   /** アップロードしたユーザーのopenId */
   uploadedBy: varchar("uploadedBy", { length: 64 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

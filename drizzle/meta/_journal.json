@@ -15,6 +15,13 @@
       "when": 1774454313595,
       "tag": "0001_slippery_lady_ursula",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1774455675335,
+      "tag": "0002_striped_giant_girl",
+      "breakpoints": true
     }
   ]
 }
