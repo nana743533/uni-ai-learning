@@ -1,11 +1,10 @@
 // ============================================================
 // StudentView — 学生向けメインビュー
 // Design: Academic Clarity
-// Tabs: AI相談 | みんなのQ&A | 授業の情報 | 感想・要望
+// Tabs: AI相談 | みんなのQ&A | 講義資料・知識 | 授業の情報 | 感想・要望
 // ============================================================
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { lectures } from "@/lib/mockData";
 import AIChatTab from "./AIChatTab";
 import CommunityQATab from "./CommunityQATab";
 import LectureDocsTab from "./LectureDocsTab";
@@ -22,9 +21,8 @@ const tabs: { id: StudentTab; label: string }[] = [
   { id: "feedback", label: "感想・要望" },
 ];
 
-export default function StudentView({ lectureId }: { lectureId: number }) {
+export default function StudentView() {
   const [activeTab, setActiveTab] = useState<StudentTab>("community-qa");
-  const lecture = lectures.find((l) => l.id === lectureId) ?? lectures[0];
 
   return (
     <div className="flex flex-col h-full">
@@ -33,9 +31,9 @@ export default function StudentView({ lectureId }: { lectureId: number }) {
         <div className="flex items-start justify-between mb-3">
           <div>
             <h1 className="text-2xl font-bold text-foreground leading-tight">
-              現代社会と心理学（{lecture.number}回）
+              現代社会と心理学
             </h1>
-            <p className="text-sm text-muted-foreground mt-0.5">{lecture.number}回目</p>
+            <p className="text-sm text-muted-foreground mt-0.5">全10回 — 学生ビュー</p>
           </div>
           <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shrink-0">
             <span className="text-sm font-bold text-primary-foreground">教</span>
@@ -65,7 +63,7 @@ export default function StudentView({ lectureId }: { lectureId: number }) {
       <div className="flex-1 overflow-hidden flex flex-col">
         {activeTab === "ai-chat" && <AIChatTab />}
         {activeTab === "community-qa" && <CommunityQATab />}
-        {activeTab === "lecture-docs" && <LectureDocsTab lectureTitle={lecture.title} />}
+        {activeTab === "lecture-docs" && <LectureDocsTab />}
         {activeTab === "course-info" && <CourseInfoTab />}
         {activeTab === "feedback" && <FeedbackTab />}
       </div>

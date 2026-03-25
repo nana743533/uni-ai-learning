@@ -1,50 +1,30 @@
 // ============================================================
 // AppLayout — 共通レイアウト
 // Design: Academic Clarity
-// - 左サイドバー (240px固定): 講義リスト + ロール切替
+// - 左サイドバー: コース情報 + ロール切替（授業回リストは廃止）
 // - メインコンテンツ: タブ付きパネル
 // ============================================================
-import { useState } from "react";
-import { lectures, type Lecture, type UserRole } from "@/lib/mockData";
-import {
-  CheckCircle2,
-  Circle,
-  PlayCircle,
-  BookOpen,
-  GraduationCap,
-  ChevronRight,
-} from "lucide-react";
+import { BookOpen, GraduationCap, BookMarked, Users, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
+import type { UserRole } from "@/lib/mockData";
+import { lectures } from "@/lib/mockData";
 
 interface AppLayoutProps {
-  selectedLectureId: number;
-  onSelectLecture: (id: number) => void;
   userRole: UserRole;
   onRoleChange: (role: UserRole) => void;
   children: React.ReactNode;
 }
 
-function LectureStatusIcon({ status }: { status: Lecture["status"] }) {
-  if (status === "completed")
-    return <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />;
-  if (status === "current")
-    return <PlayCircle className="w-4 h-4 text-primary shrink-0" />;
-  return <Circle className="w-4 h-4 text-muted-foreground shrink-0" />;
-}
+export default function AppLayout({ userRole, onRoleChange, children }: AppLayoutProps) {
+  const completedCount = lectures.filter((l) => l.status === "completed").length;
+  const currentLecture = lectures.find((l) => l.status === "current");
 
-export default function AppLayout({
-  selectedLectureId,
-  onSelectLecture,
-  userRole,
-  onRoleChange,
-  children,
-}: AppLayoutProps) {
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       {/* ── Sidebar ─────────────────────────────────────── */}
       <aside
         className="flex flex-col shrink-0 border-r border-border bg-sidebar"
-        style={{ width: "var(--sidebar-width, 240px)" }}
+        style={{ width: "240px" }}
       >
         {/* Logo / App Title */}
         <div className="px-4 py-4 border-b border-sidebar-border">
@@ -87,53 +67,86 @@ export default function AppLayout({
           </div>
         </div>
 
-        {/* Course Title */}
-        <div className="px-4 pt-4 pb-2">
-          <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-            講義リスト
+        {/* Course Info */}
+        <div className="px-4 pt-5 pb-3 border-b border-sidebar-border">
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+            受講中のコース
           </p>
-          <p className="text-xs text-muted-foreground mt-0.5">現代社会と心理学</p>
+          <div className="flex items-start gap-2.5 mb-4">
+            <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+              <BookMarked className="w-4.5 h-4.5 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <p className="text-sm font-bold text-sidebar-foreground leading-snug">
+                現代社会と心理学
+              </p>
+              <p className="text-[11px] text-muted-foreground mt-0.5">全10回</p>
+            </div>
+          </div>
+
+          {/* Progress */}
+          <div className="mb-1.5 flex items-center justify-between">
+            <span className="text-[11px] text-muted-foreground">進捗</span>
+            <span className="text-[11px] font-semibold text-primary font-['Inter']">
+              {completedCount} / {lectures.length} 回
+            </span>
+          </div>
+          <div className="h-1.5 rounded-full bg-muted overflow-hidden">
+            <div
+              className="h-full rounded-full bg-primary transition-all"
+              style={{ width: `${(completedCount / lectures.length) * 100}%` }}
+            />
+          </div>
         </div>
 
-        {/* Lecture List */}
-        <nav className="flex-1 overflow-y-auto px-2 pb-4">
-          {lectures.map((lecture) => {
-            const isActive = lecture.id === selectedLectureId;
-            return (
-              <button
-                key={lecture.id}
-                onClick={() => onSelectLecture(lecture.id)}
-                className={cn(
-                  "lecture-item w-full flex items-center gap-2 px-3 py-2.5 rounded-md text-left mb-0.5",
-                  isActive
-                    ? "active bg-sidebar-accent"
-                    : "hover:bg-sidebar-accent/60"
-                )}
-              >
-                <LectureStatusIcon status={lecture.status} />
-                <div className="flex-1 min-w-0">
-                  <p
-                    className={cn(
-                      "text-xs font-semibold leading-tight",
-                      isActive ? "text-primary" : "text-sidebar-foreground"
-                    )}
-                  >
-                    {lecture.number} 回
-                  </p>
-                  <p className="text-[11px] text-muted-foreground truncate leading-tight mt-0.5">
-                    {lecture.subtitle}
-                  </p>
-                </div>
-                {lecture.status === "current" && (
-                  <ChevronRight className="w-3 h-3 text-primary shrink-0" />
-                )}
-                {lecture.status === "completed" && (
-                  <span className="w-3 h-3 shrink-0" />
-                )}
-              </button>
-            );
-          })}
-        </nav>
+        {/* Current Lecture */}
+        {currentLecture && (
+          <div className="px-4 py-4 border-b border-sidebar-border">
+            <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
+              現在の授業回
+            </p>
+            <div className="flex items-center gap-2 px-3 py-2.5 rounded-lg bg-primary/8 border border-primary/20">
+              <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center shrink-0">
+                <span className="text-[10px] font-bold text-primary-foreground font-['Inter']">
+                  {currentLecture.number}
+                </span>
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-semibold text-primary leading-tight">
+                  第{currentLecture.number}回
+                </p>
+                <p className="text-[11px] text-muted-foreground truncate leading-tight mt-0.5">
+                  {currentLecture.title}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Stats */}
+        <div className="px-4 py-4">
+          <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-3">
+            コース統計
+          </p>
+          <div className="space-y-2.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Users className="w-3.5 h-3.5" />
+                受講生数
+              </div>
+              <span className="text-xs font-semibold text-foreground font-['Inter']">97名</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Info className="w-3.5 h-3.5" />
+                AI質問数
+              </div>
+              <span className="text-xs font-semibold text-foreground font-['Inter']">120件</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex-1" />
 
         {/* Footer */}
         <div className="px-4 py-3 border-t border-sidebar-border">

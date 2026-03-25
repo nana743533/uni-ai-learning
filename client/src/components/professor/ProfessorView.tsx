@@ -3,12 +3,9 @@
 // Design: Academic Clarity
 // Tabs: 講義資料・課題(RAG) のみ
 // ============================================================
-import { lectures } from "@/lib/mockData";
 import RAGManagementTab from "./RAGManagementTab";
 
-export default function ProfessorView({ lectureId }: { lectureId: number }) {
-  const lecture = lectures.find((l) => l.id === lectureId) ?? lectures[0];
-
+export default function ProfessorView() {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -16,14 +13,12 @@ export default function ProfessorView({ lectureId }: { lectureId: number }) {
         <div className="flex items-start justify-between">
           <div>
             <h1 className="text-2xl font-bold text-foreground leading-tight">
-              現代社会と心理学（{lecture.number}回）
+              現代社会と心理学
             </h1>
-            <p className="text-sm text-muted-foreground mt-0.5">{lecture.number}回目 — 教授用管理画面</p>
+            <p className="text-sm text-muted-foreground mt-0.5">全10回 — 教授用管理画面</p>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
-              <span className="text-sm font-bold text-amber-700">教</span>
-            </div>
+          <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center shrink-0">
+            <span className="text-sm font-bold text-amber-700">教</span>
           </div>
         </div>
       </div>
