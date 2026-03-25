@@ -220,33 +220,25 @@ export default function RAGManagementTab() {
           </button>
 
           <div ref={tickerRef} className="flex-1 overflow-x-auto flex gap-1.5 px-0.5 scrollbar-none">
-            {lectures.map((lec) => {
-              const count = docs.filter((d) => d.lectureId === lec.id).length;
-              return (
-                <button
-                  key={lec.id}
-                  onClick={() => setSelectedLectureId(lec.id)}
-                  className={cn(
-                    "relative flex items-center justify-center w-9 h-9 rounded-lg border shrink-0 transition-all",
-                    selectedLectureId === lec.id
-                      ? "bg-primary text-primary-foreground border-primary shadow-sm"
-                      : "bg-background text-foreground border-border hover:border-primary/40 hover:bg-accent/40"
-                  )}
-                >
-                  <span className={cn(
-                    "text-xs font-bold font-['Inter']",
-                    selectedLectureId === lec.id ? "text-primary-foreground" : ""
-                  )}>
-                    {lec.number}
-                  </span>
-                  {count > 0 && selectedLectureId !== lec.id && (
-                    <span className="absolute -top-1 -right-1 w-3.5 h-3.5 rounded-full bg-primary/80 text-[8px] font-bold text-white flex items-center justify-center font-['Inter']">
-                      {count}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+            {lectures.map((lec) => (
+              <button
+                key={lec.id}
+                onClick={() => setSelectedLectureId(lec.id)}
+                className={cn(
+                  "flex items-center justify-center w-9 h-9 rounded-lg border shrink-0 transition-all",
+                  selectedLectureId === lec.id
+                    ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                    : "bg-background text-foreground border-border hover:border-primary/40 hover:bg-accent/40"
+                )}
+              >
+                <span className={cn(
+                  "text-xs font-bold font-['Inter']",
+                  selectedLectureId === lec.id ? "text-primary-foreground" : ""
+                )}>
+                  {lec.number}
+                </span>
+              </button>
+            ))}
           </div>
 
           <button
