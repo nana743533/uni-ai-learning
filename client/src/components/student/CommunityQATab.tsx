@@ -3,58 +3,33 @@
 // Design: Academic Clarity
 // Features:
 //   - 全授業横断（授業回で絞り込まない）
-//   - Upvote数・関連度スコアで優先度順に表示
+//   - 参考になった順 / 新着順 の2種ソート
 //   - 匿名表示（Student A等）
-//   - 質問投稿フォーム
+//   - 閲覧専用（投稿フォームなし）
 // ============================================================
 import { useState } from "react";
-import { ThumbsUp, Send, Mic, Paperclip, User, ChevronDown, Filter } from "lucide-react";
+import { ThumbsUp, ChevronDown, Filter, User } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { qaThreads, lectures, type QAThread } from "@/lib/mockData";
-import { toast } from "sonner";
+import { qaThreads, type QAThread } from "@/lib/mockData";
 
-type SortKey = "upvotes" | "relevance" | "newest";
+type SortKey = "upvotes" | "newest";
 
 const sortLabels: Record<SortKey, string> = {
   upvotes: "参考になった順",
-  relevance: "関連度順",
   newest: "新着順",
 };
-
-function LectureBadge({ lectureId }: { lectureId: number }) {
-  const lec = lectures.find((l) => l.id === lectureId);
-  if (!lec) return null;
-  return (
-    <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-muted text-muted-foreground">
-      第{lec.number}回
-    </span>
-  );
-}
-
-function RelevanceBadge({ score }: { score: number }) {
-  return (
-    <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary">
-      関連度 {Math.round(score * 100)}%
-    </span>
-  );
-}
 
 function QAThreadCard({ thread }: { thread: QAThread }) {
   const [upvoted, setUpvoted] = useState(false);
   const [localUpvotes, setLocalUpvotes] = useState(thread.upvotes);
   const [expanded, setExpanded] = useState(false);
 
-  const firstMsg = thread.messages[0];
   const allMessages = expanded ? thread.messages : thread.messages.slice(0, 2);
 
   return (
     <div className="border border-border rounded-xl bg-card overflow-hidden">
       {/* Thread Meta */}
-      <div className="px-4 pt-3 pb-2 flex items-center justify-between border-b border-border/50">
-        <div className="flex items-center gap-2">
-          <LectureBadge lectureId={thread.lectureId} />
-          <RelevanceBadge score={thread.relevanceScore} />
-        </div>
+      <div className="px-4 pt-3 pb-2 flex items-center justify-end border-b border-border/50">
         <button
           onClick={() => {
             if (upvoted) { setUpvoted(false); setLocalUpvotes((v) => v - 1); }
@@ -112,20 +87,12 @@ function QAThreadCard({ thread }: { thread: QAThread }) {
 }
 
 export default function CommunityQATab() {
-  const [input, setInput] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("upvotes");
 
   const sortedThreads = [...qaThreads].sort((a, b) => {
     if (sortKey === "upvotes") return b.upvotes - a.upvotes;
-    if (sortKey === "relevance") return b.relevanceScore - a.relevanceScore;
     return b.id - a.id;
   });
-
-  const handlePost = () => {
-    if (!input.trim()) return;
-    toast("質問を投稿しました。AIが回答を生成中です...");
-    setInput("");
-  };
 
   return (
     <div className="flex flex-col h-full">
@@ -134,7 +101,7 @@ export default function CommunityQATab() {
         <Filter className="w-3.5 h-3.5 text-muted-foreground shrink-0" />
         <span className="text-xs text-muted-foreground">並び順：</span>
         <div className="flex gap-1">
-          {(["upvotes", "relevance", "newest"] as SortKey[]).map((key) => (
+          {(["upvotes", "newest"] as SortKey[]).map((key) => (
             <button
               key={key}
               onClick={() => setSortKey(key)}
@@ -159,36 +126,6 @@ export default function CommunityQATab() {
         {sortedThreads.map((thread) => (
           <QAThreadCard key={thread.id} thread={thread} />
         ))}
-      </div>
-
-      {/* Input Bar */}
-      <div className="px-4 py-3 border-t border-border bg-background shrink-0">
-        <div className="flex items-center gap-2 bg-card border border-border rounded-full px-4 py-2 shadow-sm">
-          <div className="w-7 h-7 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-            <span className="text-[10px] font-bold text-primary font-['Inter']">Ai</span>
-          </div>
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handlePost()}
-            placeholder="みんなのQ&Aに質問を投稿する..."
-            className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
-          />
-          <button onClick={() => toast("音声入力機能は近日公開予定です")} className="text-muted-foreground hover:text-foreground transition-colors">
-            <Mic className="w-4 h-4" />
-          </button>
-          <button onClick={() => toast("ファイル添付機能は近日公開予定です")} className="text-muted-foreground hover:text-foreground transition-colors">
-            <Paperclip className="w-4 h-4" />
-          </button>
-          <button
-            onClick={handlePost}
-            disabled={!input.trim()}
-            className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground disabled:opacity-40 hover:bg-primary/90 transition-colors"
-          >
-            <Send className="w-3.5 h-3.5" />
-          </button>
-        </div>
       </div>
     </div>
   );
