@@ -2,10 +2,11 @@
 // AIChatTab — AI相談タブ
 // Design: Academic Clarity
 // Features:
-//   - 新規チャット作成時に「参照する授業回」を複数選択
-//   - RAGコンテキストを選択した回に限定して表示
+//   - 新規チャット作成はモーダルなし（即座に「無題」で作成）
+//   - 設定パネルで参照する授業回を複数選択
+//   - RAGコンテキストバーに選択中の回を表示
 //   - プロンプト補佐ボタン（逆質問ロジック）
-//   - UXサジェスト（例えば〜と聞いてみてください）
+//   - UXサジェスト
 // ============================================================
 import { useState, useRef, useEffect } from "react";
 import {
@@ -19,10 +20,10 @@ import {
   Search,
   Plus,
   Check,
-  ChevronDown,
-  X,
   MessageSquarePlus,
   Info,
+  Settings,
+  X,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { lectures } from "@/lib/mockData";
@@ -40,7 +41,6 @@ interface ChatSession {
   title: string;
   selectedLectureIds: number[];
   messages: Message[];
-  createdAt: string;
 }
 
 interface PromptButton {
@@ -116,127 +116,102 @@ const suggestions = [
   "例えば「フロイトとユングの違いを分かりやすく教えて」と聞いてみてください！",
 ];
 
-// ─── Lecture Selector Modal ─────────────────────────────────
-function LectureSelectorModal({
+// ─── Settings Panel ──────────────────────────────────────────
+function SettingsPanel({
   selectedIds,
-  onConfirm,
-  onCancel,
+  onChange,
+  onClose,
 }: {
   selectedIds: number[];
-  onConfirm: (ids: number[]) => void;
-  onCancel: () => void;
+  onChange: (ids: number[]) => void;
+  onClose: () => void;
 }) {
-  const [draft, setDraft] = useState<Set<number>>(new Set(selectedIds));
+  const selectedSet = new Set(selectedIds);
 
   const toggle = (id: number) => {
-    setDraft((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+    const next = new Set(selectedSet);
+    if (next.has(id)) next.delete(id);
+    else next.add(id);
+    onChange(Array.from(next));
   };
 
-  const selectAll = () => setDraft(new Set(lectures.map((l) => l.id)));
-  const clearAll = () => setDraft(new Set());
+  const selectAll = () => onChange(lectures.map((l) => l.id));
+  const clearAll = () => onChange([]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-      <div className="bg-card border border-border rounded-2xl shadow-xl w-full max-w-md mx-4 overflow-hidden">
-        {/* Header */}
-        <div className="px-5 py-4 border-b border-border flex items-center justify-between">
-          <div>
-            <h3 className="text-base font-bold text-foreground">参照する授業回を選択</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              AIが検索対象とする講義資料を選んでください（複数選択可）
-            </p>
+    <div className="w-64 shrink-0 border-l border-border flex flex-col bg-sidebar">
+      {/* Header */}
+      <div className="px-4 py-3 border-b border-sidebar-border flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Settings className="w-4 h-4 text-primary" />
+          <span className="text-sm font-bold text-foreground">設定</span>
+        </div>
+        <button
+          onClick={onClose}
+          className="p-1 rounded-md hover:bg-muted transition-colors"
+        >
+          <X className="w-4 h-4 text-muted-foreground" />
+        </button>
+      </div>
+
+      {/* Section */}
+      <div className="flex-1 overflow-y-auto px-4 py-4">
+        <div className="mb-3">
+          <p className="text-xs font-bold text-foreground mb-0.5">参照する授業回</p>
+          <p className="text-[11px] text-muted-foreground mb-3">
+            AIが検索対象とする講義資料を選択してください（複数選択可）
+          </p>
+          <div className="flex gap-3 mb-3">
+            <button
+              onClick={selectAll}
+              className="text-xs text-primary hover:underline font-medium"
+            >
+              全て選択
+            </button>
+            <button
+              onClick={clearAll}
+              className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+            >
+              全て解除
+            </button>
+            <span className="ml-auto text-[11px] text-muted-foreground font-['Inter']">
+              {selectedIds.length}回選択中
+            </span>
           </div>
-          <button onClick={onCancel} className="p-1.5 rounded-lg hover:bg-muted transition-colors">
-            <X className="w-4 h-4 text-muted-foreground" />
-          </button>
-        </div>
 
-        {/* Quick actions */}
-        <div className="px-5 py-2.5 border-b border-border/50 flex gap-3">
-          <button
-            onClick={selectAll}
-            className="text-xs text-primary hover:underline font-medium"
-          >
-            全て選択
-          </button>
-          <span className="text-border">|</span>
-          <button
-            onClick={clearAll}
-            className="text-xs text-muted-foreground hover:text-foreground transition-colors"
-          >
-            全て解除
-          </button>
-          <span className="ml-auto text-xs text-muted-foreground font-['Inter']">
-            {draft.size}回選択中
-          </span>
-        </div>
-
-        {/* Lecture List */}
-        <div className="overflow-y-auto max-h-72 px-3 py-2">
-          {lectures.map((lecture) => {
-            const checked = draft.has(lecture.id);
-            return (
-              <button
-                key={lecture.id}
-                onClick={() => toggle(lecture.id)}
-                className={cn(
-                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors mb-0.5",
-                  checked ? "bg-primary/8" : "hover:bg-muted/50"
-                )}
-              >
-                <div
+          {/* Lecture List */}
+          <div className="space-y-0.5">
+            {lectures.map((lecture) => {
+              const checked = selectedSet.has(lecture.id);
+              return (
+                <button
+                  key={lecture.id}
+                  onClick={() => toggle(lecture.id)}
                   className={cn(
-                    "w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors",
-                    checked
-                      ? "bg-primary border-primary"
-                      : "border-border bg-background"
+                    "w-full flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-left transition-colors",
+                    checked ? "bg-primary/8" : "hover:bg-muted/50"
                   )}
                 >
-                  {checked && <Check className="w-3 h-3 text-primary-foreground" />}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <span className="text-sm font-medium text-foreground">
+                  <div
+                    className={cn(
+                      "w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 transition-colors",
+                      checked
+                        ? "bg-primary border-primary"
+                        : "border-border bg-background"
+                    )}
+                  >
+                    {checked && <Check className="w-2.5 h-2.5 text-primary-foreground" />}
+                  </div>
+                  <span className="text-xs font-medium text-foreground font-['Inter']">
                     第{lecture.number}回
                   </span>
-                  <span className="text-sm text-muted-foreground ml-2">
+                  <span className="text-xs text-muted-foreground truncate flex-1">
                     {lecture.title}
                   </span>
-                </div>
-                {lecture.status === "completed" && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-primary/10 text-primary shrink-0">
-                    資料あり
-                  </span>
-                )}
-                {lecture.status === "current" && (
-                  <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-50 text-amber-600 border border-amber-200 shrink-0">
-                    今回
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Footer */}
-        <div className="px-5 py-4 border-t border-border flex gap-3">
-          <button
-            onClick={onCancel}
-            className="flex-1 py-2.5 rounded-lg border border-border text-sm font-medium text-foreground hover:bg-muted/50 transition-colors"
-          >
-            キャンセル
-          </button>
-          <button
-            onClick={() => onConfirm(Array.from(draft))}
-            disabled={draft.size === 0}
-            className="flex-1 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:bg-primary/90 transition-colors disabled:opacity-40"
-          >
-            この資料でチャット開始
-          </button>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </div>
     </div>
@@ -256,7 +231,7 @@ function ChatSessionList({
   onNew: () => void;
 }) {
   return (
-    <div className="w-52 shrink-0 border-r border-border flex flex-col bg-sidebar">
+    <div className="w-48 shrink-0 border-r border-border flex flex-col bg-sidebar">
       <div className="px-3 py-3 border-b border-sidebar-border">
         <button
           onClick={onNew}
@@ -289,9 +264,11 @@ function ChatSessionList({
             >
               {s.title}
             </p>
-            <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
-              第{s.selectedLectureIds.join("・")}回 参照
-            </p>
+            {s.selectedLectureIds.length > 0 && (
+              <p className="text-[10px] text-muted-foreground mt-0.5 truncate">
+                第{s.selectedLectureIds.slice(0, 3).join("・")}回{s.selectedLectureIds.length > 3 ? "…" : ""} 参照
+              </p>
+            )}
           </button>
         ))}
       </div>
@@ -303,7 +280,7 @@ function ChatSessionList({
 export default function AIChatTab() {
   const [sessions, setSessions] = useState<ChatSession[]>([]);
   const [activeSessionId, setActiveSessionId] = useState<number | null>(null);
-  const [showModal, setShowModal] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [input, setInput] = useState("");
   const [pendingButton, setPendingButton] = useState<PromptButton | null>(null);
   const [isTyping, setIsTyping] = useState(false);
@@ -315,27 +292,34 @@ export default function AIChatTab() {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [activeSession?.messages, isTyping]);
 
-  // 新規チャット作成確定
-  const handleCreateSession = (ids: number[]) => {
-    setShowModal(false);
-    const selectedLectures = lectures.filter((l) => ids.includes(l.id));
-    const title = "無題";
+  // 設定パネルで参照回が変更されたとき
+  const handleLectureIdsChange = (ids: number[]) => {
+    if (!activeSessionId) return;
+    setSessions((prev) =>
+      prev.map((s) =>
+        s.id === activeSessionId ? { ...s, selectedLectureIds: ids } : s
+      )
+    );
+  };
+
+  // 新規チャット作成（モーダルなし・即座に作成）
+  const handleCreateSession = () => {
     const newSession: ChatSession = {
       id: Date.now(),
-      title,
-      selectedLectureIds: ids,
-      createdAt: new Date().toISOString(),
+      title: "無題",
+      selectedLectureIds: [],
       messages: [
         {
           id: 0,
           role: "ai",
           content:
-            `参照資料：${selectedLectures.map((l) => `第${l.number}回「${l.title}」`).join("、")} を設定しました。\n\nこれらの資料をもとに、どんなことでも気軽に質問してください！\n\n${suggestions[0]}`,
+            `こんにちは！AI相談へようこそ。\n\n右上の「設定」から参照したい授業回を選択すると、その資料をもとに回答します。\n\n${suggestions[0]}`,
         },
       ],
     };
     setSessions((prev) => [newSession, ...prev]);
     setActiveSessionId(newSession.id);
+    setShowSettings(true); // 新規作成時は設定パネルを自動で開く
   };
 
   const addAIMessage = (content: string) => {
@@ -381,24 +365,23 @@ export default function AIChatTab() {
           : s
       )
     );
+    const ids = activeSession.selectedLectureIds;
+    const refs =
+      ids.length > 0
+        ? lectures
+            .filter((l) => ids.includes(l.id))
+            .map((l) => `第${l.number}回`)
+            .join("・") + "の資料をもとに"
+        : "（参照資料未設定）";
+
     if (pendingButton) {
       setPendingButton(null);
-      const ids = activeSession.selectedLectureIds;
-      const refs = lectures
-        .filter((l) => ids.includes(l.id))
-        .map((l) => `第${l.number}回`)
-        .join("・");
       addAIMessage(
-        `ご回答ありがとうございます！${refs}の資料をもとに回答を生成します。\n\n（※ここでは実際のAI応答がRAGで生成されます。現在はデモ表示です。）\n\n${suggestions[Math.floor(Math.random() * suggestions.length)]}`
+        `ご回答ありがとうございます！${refs}回答を生成します。\n\n（※ここでは実際のAI応答がRAGで生成されます。現在はデモ表示です。）\n\n${suggestions[Math.floor(Math.random() * suggestions.length)]}`
       );
     } else {
-      const ids = activeSession.selectedLectureIds;
-      const refs = lectures
-        .filter((l) => ids.includes(l.id))
-        .map((l) => `第${l.number}回`)
-        .join("・");
       addAIMessage(
-        `${refs}の資料をもとに回答します。\n\n（※ここでは実際のAI応答がRAGで生成されます。現在はデモ表示です。）\n\n${suggestions[Math.floor(Math.random() * suggestions.length)]}`
+        `${refs}回答します。\n\n（※ここでは実際のAI応答がRAGで生成されます。現在はデモ表示です。）\n\n${suggestions[Math.floor(Math.random() * suggestions.length)]}`
       );
     }
   };
@@ -409,8 +392,8 @@ export default function AIChatTab() {
       <ChatSessionList
         sessions={sessions}
         activeId={activeSessionId}
-        onSelect={setActiveSessionId}
-        onNew={() => setShowModal(true)}
+        onSelect={(id) => { setActiveSessionId(id); setShowSettings(false); }}
+        onNew={handleCreateSession}
       />
 
       {/* Chat Area */}
@@ -424,11 +407,11 @@ export default function AIChatTab() {
             <div>
               <h3 className="text-base font-bold text-foreground mb-1">AI相談を始めましょう</h3>
               <p className="text-sm text-muted-foreground max-w-xs">
-                「新規チャット」から参照したい授業回の資料を選択して、チャットを開始してください。
+                「新規チャット」からチャットを作成し、設定で参照したい授業回を選択してください。
               </p>
             </div>
             <button
-              onClick={() => setShowModal(true)}
+              onClick={handleCreateSession}
               className="flex items-center gap-2 px-5 py-2.5 rounded-lg bg-primary text-primary-foreground text-sm font-semibold hover:bg-primary/90 transition-colors"
             >
               <Plus className="w-4 h-4" />
@@ -437,23 +420,40 @@ export default function AIChatTab() {
           </div>
         ) : (
           <>
-            {/* RAG Context Bar */}
-            <div className="flex items-center gap-2 px-4 py-2 bg-accent/50 border-b border-border text-xs text-muted-foreground shrink-0">
+            {/* Chat Toolbar */}
+            <div className="flex items-center gap-2 px-4 py-2 bg-accent/50 border-b border-border shrink-0">
               <Info className="w-3.5 h-3.5 text-primary shrink-0" />
-              <span>参照資料：</span>
-              <div className="flex gap-1 flex-wrap">
-                {activeSession.selectedLectureIds.map((id) => {
-                  const lec = lectures.find((l) => l.id === id);
-                  return lec ? (
-                    <span
-                      key={id}
-                      className="px-1.5 py-0.5 rounded bg-primary/10 text-primary font-medium"
-                    >
-                      第{lec.number}回
-                    </span>
-                  ) : null;
-                })}
+              <span className="text-xs text-muted-foreground">参照資料：</span>
+              <div className="flex gap-1 flex-wrap flex-1">
+                {activeSession.selectedLectureIds.length === 0 ? (
+                  <span className="text-xs text-muted-foreground italic">未設定（右の設定から選択）</span>
+                ) : (
+                  activeSession.selectedLectureIds.map((id) => {
+                    const lec = lectures.find((l) => l.id === id);
+                    return lec ? (
+                      <span
+                        key={id}
+                        className="px-1.5 py-0.5 rounded bg-primary/10 text-primary text-xs font-medium"
+                      >
+                        第{lec.number}回
+                      </span>
+                    ) : null;
+                  })
+                )}
               </div>
+              {/* Settings Toggle */}
+              <button
+                onClick={() => setShowSettings((v) => !v)}
+                className={cn(
+                  "flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border transition-colors shrink-0",
+                  showSettings
+                    ? "bg-primary text-primary-foreground border-primary"
+                    : "bg-background text-muted-foreground border-border hover:text-foreground hover:border-primary/40"
+                )}
+              >
+                <Settings className="w-3.5 h-3.5" />
+                設定
+              </button>
             </div>
 
             {/* Messages */}
@@ -559,12 +559,12 @@ export default function AIChatTab() {
         )}
       </div>
 
-      {/* Modal */}
-      {showModal && (
-        <LectureSelectorModal
-          selectedIds={[]}
-          onConfirm={handleCreateSession}
-          onCancel={() => setShowModal(false)}
+      {/* Settings Panel */}
+      {showSettings && activeSession && (
+        <SettingsPanel
+          selectedIds={activeSession.selectedLectureIds}
+          onChange={handleLectureIdsChange}
+          onClose={() => setShowSettings(false)}
         />
       )}
     </div>
