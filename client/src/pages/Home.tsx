@@ -1,25 +1,29 @@
-import { Button } from "@/components/ui/button";
-import { Loader2 } from "lucide-react";
-import { Streamdown } from 'streamdown';
+// ============================================================
+// Home — メインページ（全体統合）
+// Design: Academic Clarity (Swiss International Style × Modern EdTech)
+// ============================================================
+import { useState } from "react";
+import AppLayout from "@/components/AppLayout";
+import StudentView from "@/components/student/StudentView";
+import ProfessorView from "@/components/professor/ProfessorView";
+import type { UserRole } from "@/lib/mockData";
 
-/**
- * All content in this page are only for example, replace with your own feature implementation
- * When building pages, remember your instructions in Frontend Best Practices, Design Guide and Common Pitfalls
- */
 export default function Home() {
-  // If theme is switchable in App.tsx, we can implement theme toggling like this:
-  // const { theme, toggleTheme } = useTheme();
+  const [selectedLectureId, setSelectedLectureId] = useState(1);
+  const [userRole, setUserRole] = useState<UserRole>("student");
 
   return (
-    <div className="min-h-screen flex flex-col">
-      <main>
-        {/* Example: lucide-react for icons */}
-        <Loader2 className="animate-spin" />
-        Example Page
-        {/* Example: Streamdown for markdown rendering */}
-        <Streamdown>Any **markdown** content</Streamdown>
-        <Button variant="default">Example Button</Button>
-      </main>
-    </div>
+    <AppLayout
+      selectedLectureId={selectedLectureId}
+      onSelectLecture={setSelectedLectureId}
+      userRole={userRole}
+      onRoleChange={setUserRole}
+    >
+      {userRole === "student" ? (
+        <StudentView lectureId={selectedLectureId} />
+      ) : (
+        <ProfessorView lectureId={selectedLectureId} />
+      )}
+    </AppLayout>
   );
 }
