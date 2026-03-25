@@ -1,0 +1,55 @@
+{
+  "query": "SELECT id, lectureNumber, title, fileType, fileSize, aiEnabled, uploadedBy FROM documents ORDER BY lectureNumber;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway04.us-east-1.prod.aws.tidbcloud.com --port 4000 --user UoYa6dVGWqN2Lk9.90807adaa69b --database jiRD9D4osLyjHhm2vUMayk --execute SELECT id, lectureNumber, title, fileType, fileSize, aiEnabled, uploadedBy FROM documents ORDER BY lectureNumber;",
+  "rows": [
+    {
+      "id": "1",
+      "lectureNumber": "1",
+      "title": "第1回 イントロダクション — 情報社会とは何か",
+      "fileType": "pdf",
+      "fileSize": "83107",
+      "aiEnabled": "on",
+      "uploadedBy": "demo_professor"
+    },
+    {
+      "id": "2",
+      "lectureNumber": "2",
+      "title": "第2回 プライバシーとデータ保護",
+      "fileType": "pdf",
+      "fileSize": "85616",
+      "aiEnabled": "on",
+      "uploadedBy": "demo_professor"
+    },
+    {
+      "id": "3",
+      "lectureNumber": "3",
+      "title": "第3回 著作権とデジタルコンテンツ",
+      "fileType": "pdf",
+      "fileSize": "95457",
+      "aiEnabled": "on",
+      "uploadedBy": "demo_professor"
+    },
+    {
+      "id": "4",
+      "lectureNumber": "4",
+      "title": "第4回 AIと倫理",
+      "fileType": "pdf",
+      "fileSize": "112714",
+      "aiEnabled": "on",
+      "uploadedBy": "demo_professor"
+    },
+    {
+      "id": "5",
+      "lectureNumber": "5",
+      "title": "第5回 デジタル市民権とネットリテラシー",
+      "fileType": "pdf",
+      "fileSize": "99384",
+      "aiEnabled": "on",
+      "uploadedBy": "demo_professor"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tlectureNumber\ttitle\tfileType\tfileSize\taiEnabled\tuploadedBy\n1\t1\t第1回 イントロダクション — 情報社会とは何か\tpdf\t83107\ton\tdemo_professor\n2\t2\t第2回 プライバシーとデータ保護\tpdf\t85616\ton\tdemo_professor\n3\t3\t第3回 著作権とデジタルコンテンツ\tpdf\t95457\ton\tdemo_professor\n4\t4\t第4回 AIと倫理\tpdf\t112714\ton\tdemo_professor\n5\t5\t第5回 デジタル市民権とネットリテラシー\tpdf\t99384\ton\tdemo_professor\n",
+  "stderr": "",
+  "execution_time_ms": 1651
+}
