@@ -302,18 +302,19 @@ export default function AIChatTab() {
     );
   };
 
-  // 新規チャット作成（モーダルなし・即座に作成）
+  // 新規チャット作成（モーダルなし・即座に作成・全回デフォルト選択）
   const handleCreateSession = () => {
+    const allIds = lectures.map((l) => l.id);
     const newSession: ChatSession = {
       id: Date.now(),
       title: "無題",
-      selectedLectureIds: [],
+      selectedLectureIds: allIds,
       messages: [
         {
           id: 0,
           role: "ai",
           content:
-            `こんにちは！AI相談へようこそ。\n\n右上の「設定」から参照したい授業回を選択すると、その資料をもとに回答します。\n\n${suggestions[0]}`,
+            `こんにちは！AI相談へようこそ。\n\n全${allIds.length}回の授業資料を参照対象に設定しました。右上の「設定」から参照する回を変更することもできます。\n\n${suggestions[0]}`,
         },
       ],
     };
