@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, InsertDocument, documents, users } from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -90,3 +90,43 @@ export async function getUserByOpenId(openId: string) {
 }
 
 // TODO: add feature queries here as your schema grows.
+
+// ─── Documents ───────────────────────────────────────────────
+
+export async function insertDocument(doc: InsertDocument) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const result = await db.insert(documents).values(doc);
+  return result;
+}
+
+export async function getDocumentsByLecture(lectureNumber: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(documents).where(eq(documents.lectureNumber, lectureNumber));
+}
+
+export async function getAllDocuments() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(documents);
+}
+
+export async function deleteDocument(id: number) {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.delete(documents).where(eq(documents.id, id));
+}
+
+export async function getDocumentById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(documents).where(eq(documents.id, id)).limit(1);
+  return result[0];
+}
+
+export async function updateDocumentAiEnabled(id: number, aiEnabled: "on" | "off") {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  return db.update(documents).set({ aiEnabled }).where(eq(documents.id, id));
+}

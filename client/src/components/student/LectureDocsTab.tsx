@@ -1,30 +1,35 @@
 // ============================================================
 // LectureDocsTab — 講義資料・知識タブ（学生向け）
-// Design: Academic Clarity
 // Features:
-//   - タブ内で授業回を選択（ティッカー形式）
-//   - 選択した回の資料一覧を表示
+//   - 授業回ティッカーで絞り込み
+//   - S3にアップロードされた実際の資料を表示
 //   - AIナレッジ対象/対象外で分類
-//   - 資料ダウンロード・外部リンク
+//   - 外部リンクで資料を開く
 // ============================================================
 import { useState } from "react";
-import { FileText, Globe, File, Download, ExternalLink, Search, ChevronLeft, ChevronRight, Lock } from "lucide-react";
-import { lectures, ragDocuments } from "@/lib/mockData";
-import { toast } from "sonner";
+import { FileText, Globe, File, ExternalLink, Search, ChevronLeft, ChevronRight, Lock, Loader2 } from "lucide-react";
+import { lectures } from "@/lib/mockData";
 import { cn } from "@/lib/utils";
+import { trpc } from "@/lib/trpc";
 
 function DocTypeIcon({ type }: { type: string }) {
-  if (type === "pdf") return (
+  const t = (type ?? "").toLowerCase();
+  if (t === "pdf") return (
     <div className="w-8 h-8 rounded bg-red-50 flex items-center justify-center shrink-0">
       <FileText className="w-4 h-4 text-red-500" />
     </div>
   );
-  if (type === "doc") return (
+  if (t === "doc" || t === "docx") return (
     <div className="w-8 h-8 rounded bg-blue-50 flex items-center justify-center shrink-0">
       <FileText className="w-4 h-4 text-blue-500" />
     </div>
   );
-  if (type === "web") return (
+  if (t === "ppt" || t === "pptx") return (
+    <div className="w-8 h-8 rounded bg-orange-50 flex items-center justify-center shrink-0">
+      <FileText className="w-4 h-4 text-orange-500" />
+    </div>
+  );
+  if (t === "web") return (
     <div className="w-8 h-8 rounded bg-green-50 flex items-center justify-center shrink-0">
       <Globe className="w-4 h-4 text-green-500" />
     </div>
@@ -37,27 +42,31 @@ function DocTypeIcon({ type }: { type: string }) {
 }
 
 export default function LectureDocsTab() {
-  // 現在の授業回をデフォルト選択
   const defaultLecture = lectures.find((l) => l.status === "current") ?? lectures[0];
-  const [selectedLectureId, setSelectedLectureId] = useState(defaultLecture.id);
+  const [selectedLectureNumber, setSelectedLectureNumber] = useState(defaultLecture.number);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const selectedLecture = lectures.find((l) => l.id === selectedLectureId) ?? lectures[0];
-  const selectedIndex = lectures.findIndex((l) => l.id === selectedLectureId);
+  const selectedLecture = lectures.find((l) => l.number === selectedLectureNumber) ?? lectures[0];
+  const selectedIndex = lectures.findIndex((l) => l.number === selectedLectureNumber);
 
   const goPrev = () => {
-    if (selectedIndex > 0) setSelectedLectureId(lectures[selectedIndex - 1].id);
+    if (selectedIndex > 0) setSelectedLectureNumber(lectures[selectedIndex - 1].number);
   };
   const goNext = () => {
-    if (selectedIndex < lectures.length - 1) setSelectedLectureId(lectures[selectedIndex + 1].id);
+    if (selectedIndex < lectures.length - 1) setSelectedLectureNumber(lectures[selectedIndex + 1].number);
   };
 
-  const docsForLecture = ragDocuments.filter((d) => d.lectureId === selectedLectureId);
-  const filteredDocs = docsForLecture.filter((d) =>
+  // DBから資料一覧を取得（AIオンのもののみ学生に表示）
+  const { data: docs = [], isLoading } = trpc.documents.list.useQuery(
+    { lectureNumber: selectedLectureNumber },
+    { refetchOnWindowFocus: false }
+  );
+
+  const filteredDocs = docs.filter((d) =>
     d.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
-  const enabledDocs = filteredDocs.filter((d) => d.aiEnabled);
-  const disabledDocs = filteredDocs.filter((d) => !d.aiEnabled);
+  const enabledDocs = filteredDocs.filter((d) => d.aiEnabled === "on");
+  const disabledDocs = filteredDocs.filter((d) => d.aiEnabled !== "on");
   const isUpcoming = selectedLecture.status === "upcoming";
 
   return (
@@ -67,8 +76,6 @@ export default function LectureDocsTab() {
         <p className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-2">
           授業回を選択
         </p>
-
-        {/* Ticker / Horizontal scroll */}
         <div className="flex items-center gap-1">
           <button
             onClick={goPrev}
@@ -82,10 +89,10 @@ export default function LectureDocsTab() {
             {lectures.map((lec) => (
               <button
                 key={lec.id}
-                onClick={() => setSelectedLectureId(lec.id)}
+                onClick={() => setSelectedLectureNumber(lec.number)}
                 className={cn(
                   "flex items-center justify-center px-3 py-1.5 rounded-lg border shrink-0 transition-all",
-                  selectedLectureId === lec.id
+                  selectedLectureNumber === lec.number
                     ? "bg-primary text-primary-foreground border-primary shadow-sm"
                     : lec.status === "upcoming"
                     ? "bg-background text-muted-foreground border-border opacity-60 hover:opacity-100"
@@ -94,7 +101,7 @@ export default function LectureDocsTab() {
               >
                 <span className={cn(
                   "text-xs font-bold font-['Inter']",
-                  selectedLectureId === lec.id ? "text-primary-foreground" : ""
+                  selectedLectureNumber === lec.number ? "text-primary-foreground" : ""
                 )}>
                   {lec.number}
                 </span>
@@ -110,8 +117,6 @@ export default function LectureDocsTab() {
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
-
-
       </div>
 
       {/* ── コンテンツ ───────────────────────────────────── */}
@@ -143,7 +148,12 @@ export default function LectureDocsTab() {
             />
           </div>
 
-          {filteredDocs.length === 0 ? (
+          {isLoading ? (
+            <div className="flex items-center justify-center gap-2 py-10 text-sm text-muted-foreground">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              読み込み中...
+            </div>
+          ) : filteredDocs.length === 0 ? (
             <div className="text-center py-10 text-sm text-muted-foreground">
               {searchQuery ? "検索結果がありません" : "この回の資料はまだアップロードされていません"}
             </div>
@@ -161,25 +171,22 @@ export default function LectureDocsTab() {
                         key={doc.id}
                         className="flex items-center gap-3 p-3 rounded-lg border border-border bg-card hover:border-primary/30 hover:bg-accent/30 transition-all group"
                       >
-                        <DocTypeIcon type={doc.type} />
+                        <DocTypeIcon type={doc.fileType} />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-foreground truncate">{doc.title}</p>
-                          <p className="text-[11px] text-muted-foreground">{doc.uploadedBy}</p>
+                          <p className="text-[11px] text-muted-foreground">
+                            {doc.fileSize ? `${(doc.fileSize / 1024).toFixed(1)} KB` : ""}
+                          </p>
                         </div>
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            onClick={() => toast("ダウンロード機能は近日公開予定です")}
-                            className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                          >
-                            <Download className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => toast("外部リンク機能は近日公開予定です")}
-                            className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                          >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                        <a
+                          href={doc.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1.5 rounded hover:bg-muted text-primary hover:text-primary/80 transition-colors opacity-0 group-hover:opacity-100"
+                          title="外部リンクで開く"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
                         <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-primary/10 text-primary shrink-0">
                           AI対象
                         </span>
@@ -201,25 +208,22 @@ export default function LectureDocsTab() {
                         key={doc.id}
                         className="flex items-center gap-3 p-3 rounded-lg border border-border bg-card/50 hover:bg-card transition-all group"
                       >
-                        <DocTypeIcon type={doc.type} />
+                        <DocTypeIcon type={doc.fileType} />
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium text-foreground truncate">{doc.title}</p>
-                          <p className="text-[11px] text-muted-foreground">{doc.uploadedBy}</p>
+                          <p className="text-[11px] text-muted-foreground">
+                            {doc.fileSize ? `${(doc.fileSize / 1024).toFixed(1)} KB` : ""}
+                          </p>
                         </div>
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <button
-                            onClick={() => toast("ダウンロード機能は近日公開予定です")}
-                            className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                          >
-                            <Download className="w-3.5 h-3.5" />
-                          </button>
-                          <button
-                            onClick={() => toast("外部リンク機能は近日公開予定です")}
-                            className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
-                          >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </button>
-                        </div>
+                        <a
+                          href={doc.fileUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-1.5 rounded hover:bg-muted text-muted-foreground hover:text-foreground transition-colors opacity-0 group-hover:opacity-100"
+                          title="外部リンクで開く"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
                         <span className="text-[10px] font-medium px-1.5 py-0.5 rounded bg-muted text-muted-foreground shrink-0">
                           AI対象外
                         </span>
