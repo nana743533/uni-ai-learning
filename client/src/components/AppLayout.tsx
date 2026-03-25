@@ -27,14 +27,6 @@ export default function AppLayout({ userRole, onRoleChange, children }: AppLayou
           <span className="text-sm font-bold text-foreground">UniAI</span>
         </div>
 
-        {/* Divider */}
-        <div className="w-px h-5 bg-border shrink-0" />
-
-        {/* Course Name */}
-        <span className="text-sm font-semibold text-foreground truncate">
-          現代社会と心理学
-        </span>
-
         <div className="flex-1" />
 
         {/* Role Toggle */}

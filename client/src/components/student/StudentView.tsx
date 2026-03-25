@@ -22,21 +22,8 @@ export default function StudentView() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="px-6 pt-5 pb-0 border-b border-border bg-background">
-        <div className="flex items-start justify-between mb-3">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground leading-tight">
-              現代社会と心理学
-            </h1>
-            <p className="text-sm text-muted-foreground mt-0.5">全10回 — 学生ビュー</p>
-          </div>
-          <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center shrink-0">
-            <span className="text-sm font-bold text-primary-foreground">教</span>
-          </div>
-        </div>
-
-        {/* Tabs */}
+      {/* Tabs */}
+      <div className="px-6 border-b border-border bg-background shrink-0">
         <div className="flex gap-0 overflow-x-auto">
           {tabs.map((tab) => (
             <button
