@@ -1,12 +1,13 @@
 // ============================================================
-// AIChatTab — AI相談タブ
+// AIChatTab — AI相談タブ（Gemini API対応）
 // Design: Academic Clarity
 // Features:
 //   - 新規チャット作成はモーダルなし（即座に「無題」で作成）
 //   - 設定パネルで参照する授業回を複数選択
 //   - RAGコンテキストバーに選択中の回を表示
 //   - プロンプト補佐ボタン（逆質問ロジック）
-//   - UXサジェスト
+//   - Gemini APIによるリアルAI応答
+//   - Streamdownによるマークダウンレンダリング
 // ============================================================
 import { useState, useRef, useEffect } from "react";
 import {
@@ -24,10 +25,13 @@ import {
   Info,
   Settings,
   X,
+  AlertCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { lectures } from "@/lib/mockData";
 import { toast } from "sonner";
+import { trpc } from "@/lib/trpc";
+import { Streamdown } from "streamdown";
 
 // ─── Types ──────────────────────────────────────────────────
 interface Message {
@@ -283,14 +287,35 @@ export default function AIChatTab() {
   const [showSettings, setShowSettings] = useState(false);
   const [input, setInput] = useState("");
   const [pendingButton, setPendingButton] = useState<PromptButton | null>(null);
-  const [isTyping, setIsTyping] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [apiError, setApiError] = useState<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const activeSession = sessions.find((s) => s.id === activeSessionId) ?? null;
 
+  // tRPC mutation for Gemini API
+  const sendMutation = trpc.chat.send.useMutation({
+    onSuccess: (data) => {
+      setSessions((prev) =>
+        prev.map((s) =>
+          s.id === activeSessionId
+            ? { ...s, messages: [...s.messages, { id: Date.now(), role: "ai", content: data.reply }] }
+            : s
+        )
+      );
+      setIsLoading(false);
+      setApiError(null);
+    },
+    onError: (err) => {
+      setIsLoading(false);
+      setApiError(`AI応答エラー: ${err.message}`);
+      toast.error("AI応答の取得に失敗しました。しばらく待ってから再試行してください。");
+    },
+  });
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [activeSession?.messages, isTyping]);
+  }, [activeSession?.messages, isLoading]);
 
   // 設定パネルで参照回が変更されたとき
   const handleLectureIdsChange = (ids: number[]) => {
@@ -320,71 +345,84 @@ export default function AIChatTab() {
     };
     setSessions((prev) => [newSession, ...prev]);
     setActiveSessionId(newSession.id);
+    setApiError(null);
     // 設定パネルはデフォルトで閉じた状態
   };
 
-  const addAIMessage = (content: string) => {
-    setIsTyping(true);
-    setTimeout(() => {
-      setSessions((prev) =>
-        prev.map((s) =>
-          s.id === activeSessionId
-            ? { ...s, messages: [...s.messages, { id: Date.now(), role: "ai", content }] }
-            : s
-        )
-      );
-      setIsTyping(false);
-    }, 800);
+  // Gemini APIにメッセージ送信
+  const callGeminiAPI = (session: ChatSession, newUserContent: string) => {
+    const selectedLectureNames = session.selectedLectureIds.map((id) => {
+      const lec = lectures.find((l) => l.id === id);
+      return lec ? `第${lec.number}回「${lec.title}」` : "";
+    }).filter(Boolean);
+
+    // 会話履歴をGemini形式に変換（最新20件まで）
+    const historyMessages = session.messages
+      .filter((m) => m.id !== 0) // 初期ウェルカムメッセージを除外
+      .slice(-20)
+      .map((m) => ({
+        role: m.role === "user" ? "user" as const : "model" as const,
+        content: m.content,
+      }));
+
+    // 新しいユーザーメッセージを追加
+    const allMessages = [
+      ...historyMessages,
+      { role: "user" as const, content: newUserContent },
+    ];
+
+    setIsLoading(true);
+    sendMutation.mutate({
+      messages: allMessages,
+      selectedLectures: selectedLectureNames,
+    });
   };
 
   const handlePromptButton = (btn: PromptButton) => {
-    if (!activeSession) return;
+    if (!activeSession || isLoading) return;
     setPendingButton(btn);
     const userMsg = `${btn.label}${btn.subLabel} を使いたい`;
+
+    // ユーザーメッセージを追加
+    const updatedSession = {
+      ...activeSession,
+      messages: [...activeSession.messages, { id: Date.now(), role: "user" as const, content: userMsg }],
+    };
     setSessions((prev) =>
-      prev.map((s) =>
-        s.id === activeSessionId
-          ? { ...s, messages: [...s.messages, { id: Date.now(), role: "user", content: userMsg }] }
-          : s
-      )
+      prev.map((s) => (s.id === activeSessionId ? updatedSession : s))
     );
-    const reverseQ =
-      `より良い回答をするために、いくつか確認させてください！\n\n` +
+
+    // 逆質問をAIから生成（Gemini API経由）
+    const reverseQPrompt =
+      `ユーザーが「${btn.label}${btn.subLabel}」機能を使いたいと言っています。\n` +
+      `より良い回答をするために、以下の3点について確認してください：\n` +
       btn.reverseQuestions.map((q, i) => `${i + 1}. ${q}`).join("\n") +
-      `\n\n${suggestions[Math.floor(Math.random() * suggestions.length)]}`;
-    addAIMessage(reverseQ);
+      `\n\n最後に「例えば〜と聞いてみてください」という形のサジェストを1つ添えてください。`;
+
+    callGeminiAPI(updatedSession, reverseQPrompt);
   };
 
   const handleSend = () => {
-    if (!input.trim() || !activeSession) return;
+    if (!input.trim() || !activeSession || isLoading) return;
     const userContent = input.trim();
     setInput("");
+    setApiError(null);
+
+    // ユーザーメッセージを追加
+    const updatedSession = {
+      ...activeSession,
+      messages: [...activeSession.messages, { id: Date.now(), role: "user" as const, content: userContent }],
+    };
     setSessions((prev) =>
-      prev.map((s) =>
-        s.id === activeSessionId
-          ? { ...s, messages: [...s.messages, { id: Date.now(), role: "user", content: userContent }] }
-          : s
-      )
+      prev.map((s) => (s.id === activeSessionId ? updatedSession : s))
     );
-    const ids = activeSession.selectedLectureIds;
-    const refs =
-      ids.length > 0
-        ? lectures
-            .filter((l) => ids.includes(l.id))
-            .map((l) => `第${l.number}回`)
-            .join("・") + "の資料をもとに"
-        : "（参照資料未設定）";
 
     if (pendingButton) {
       setPendingButton(null);
-      addAIMessage(
-        `ご回答ありがとうございます！${refs}回答を生成します。\n\n（※ここでは実際のAI応答がRAGで生成されます。現在はデモ表示です。）\n\n${suggestions[Math.floor(Math.random() * suggestions.length)]}`
-      );
-    } else {
-      addAIMessage(
-        `${refs}回答します。\n\n（※ここでは実際のAI応答がRAGで生成されます。現在はデモ表示です。）\n\n${suggestions[Math.floor(Math.random() * suggestions.length)]}`
-      );
     }
+
+    // Gemini APIに送信
+    callGeminiAPI(updatedSession, userContent);
   };
 
   return (
@@ -393,7 +431,7 @@ export default function AIChatTab() {
       <ChatSessionList
         sessions={sessions}
         activeId={activeSessionId}
-        onSelect={(id) => { setActiveSessionId(id); setShowSettings(false); }}
+        onSelect={(id) => { setActiveSessionId(id); setShowSettings(false); setApiError(null); }}
         onNew={handleCreateSession}
       />
 
@@ -457,6 +495,14 @@ export default function AIChatTab() {
               </button>
             </div>
 
+            {/* API Error Banner */}
+            {apiError && (
+              <div className="flex items-center gap-2 px-4 py-2 bg-destructive/10 border-b border-destructive/20 shrink-0">
+                <AlertCircle className="w-4 h-4 text-destructive shrink-0" />
+                <span className="text-xs text-destructive">{apiError}</span>
+              </div>
+            )}
+
             {/* Messages */}
             <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
               {activeSession.messages.map((msg) => (
@@ -474,17 +520,23 @@ export default function AIChatTab() {
                   )}
                   <div
                     className={cn(
-                      "max-w-[80%] rounded-xl px-4 py-3 text-sm leading-relaxed whitespace-pre-wrap",
+                      "max-w-[80%] rounded-xl px-4 py-3 text-sm leading-relaxed",
                       msg.role === "ai"
                         ? "ai-bubble rounded-tl-none text-foreground"
-                        : "bg-primary text-primary-foreground rounded-tr-none"
+                        : "bg-primary text-primary-foreground rounded-tr-none whitespace-pre-wrap"
                     )}
                   >
-                    {msg.content}
+                    {msg.role === "ai" ? (
+                      <Streamdown className="prose prose-sm max-w-none text-foreground [&_p]:my-1 [&_ul]:my-1 [&_ol]:my-1 [&_li]:my-0.5">
+                        {msg.content}
+                      </Streamdown>
+                    ) : (
+                      msg.content
+                    )}
                   </div>
                 </div>
               ))}
-              {isTyping && (
+              {isLoading && (
                 <div className="chat-message flex gap-3">
                   <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0">
                     <span className="text-[11px] font-bold text-primary-foreground font-['Inter']">Ai</span>
@@ -512,7 +564,8 @@ export default function AIChatTab() {
                   <button
                     key={btn.id}
                     onClick={() => handlePromptButton(btn)}
-                    className="prompt-btn flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-xl border border-border bg-card hover:border-primary/40 hover:bg-accent/50 min-w-[84px] shrink-0 text-center"
+                    disabled={isLoading}
+                    className="prompt-btn flex flex-col items-center gap-1.5 px-3 py-2.5 rounded-xl border border-border bg-card hover:border-primary/40 hover:bg-accent/50 min-w-[84px] shrink-0 text-center disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <div className="w-9 h-9 rounded-lg bg-primary/8 flex items-center justify-center text-primary">
                       {btn.icon}
@@ -537,9 +590,10 @@ export default function AIChatTab() {
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && handleSend()}
-                  placeholder="AI相談に質問する、またはプロンプトを入力..."
-                  className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+                  onKeyDown={(e) => e.key === "Enter" && !isLoading && handleSend()}
+                  placeholder={isLoading ? "AI が回答を生成中..." : "AI相談に質問する、またはプロンプトを入力..."}
+                  disabled={isLoading}
+                  className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:opacity-60"
                 />
                 <button onClick={() => toast("音声入力機能は近日公開予定です")} className="text-muted-foreground hover:text-foreground transition-colors">
                   <Mic className="w-4 h-4" />
@@ -549,7 +603,7 @@ export default function AIChatTab() {
                 </button>
                 <button
                   onClick={handleSend}
-                  disabled={!input.trim()}
+                  disabled={!input.trim() || isLoading}
                   className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground disabled:opacity-40 hover:bg-primary/90 transition-colors"
                 >
                   <Send className="w-3.5 h-3.5" />
