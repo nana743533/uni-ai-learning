@@ -590,8 +590,14 @@ export default function AIChatTab() {
                   type="text"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={(e) => e.key === "Enter" && !isLoading && handleSend()}
-                  placeholder={isLoading ? "AI が回答を生成中..." : "AI相談に質問する、またはプロンプトを入力..."}
+                  onKeyDown={(e) => {
+                    // Shift+Enter で送信、Enter のみは改行（IME確定でも誤送信しない）
+                    if (e.key === "Enter" && e.shiftKey && !e.nativeEvent.isComposing && !isLoading) {
+                      e.preventDefault();
+                      handleSend();
+                    }
+                  }}
+                  placeholder={isLoading ? "AI が回答を生成中..." : "Shift+Enter で送信 — AI相談に質問する..."}
                   disabled={isLoading}
                   className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground disabled:opacity-60"
                 />
