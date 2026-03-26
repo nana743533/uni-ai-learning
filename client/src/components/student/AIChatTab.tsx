@@ -26,6 +26,9 @@ import {
   Settings,
   X,
   AlertCircle,
+  ChevronDown,
+  Sparkles,
+  Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { lectures } from "@/lib/mockData";
@@ -113,6 +116,136 @@ const promptButtons: PromptButton[] = [
     ],
   },
 ];
+
+// ─── AI Models ───────────────────────────────────────────────────
+interface AIModel {
+  id: string;
+  name: string;
+  provider: string;
+  description: string;
+  active: boolean;
+}
+
+const aiModels: AIModel[] = [
+  {
+    id: "gemini-2.5-flash",
+    name: "Gemini 2.5 Flash",
+    provider: "Google",
+    description: "高速・軽量な汎用モデル",
+    active: true,
+  },
+  {
+    id: "gpt-4o",
+    name: "GPT-4o",
+    provider: "OpenAI",
+    description: "高精度マルチモーダル",
+    active: false,
+  },
+  {
+    id: "claude-4-sonnet",
+    name: "Claude 4 Sonnet",
+    provider: "Anthropic",
+    description: "長文脈・深い推論",
+    active: false,
+  },
+];
+
+function ModelSelector({
+  selectedModelId,
+  onSelect,
+}: {
+  selectedModelId: string;
+  onSelect: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  const selectedModel = aiModels.find((m) => m.id === selectedModelId)!;
+
+  // 外側クリックで閉じる
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  return (
+    <div ref={ref} className="relative">
+      <button
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium border border-border bg-background hover:border-primary/40 transition-colors shrink-0"
+      >
+        <Sparkles className="w-3.5 h-3.5 text-primary" />
+        <span className="text-foreground">{selectedModel.name}</span>
+        <ChevronDown className={cn("w-3 h-3 text-muted-foreground transition-transform", open && "rotate-180")} />
+      </button>
+
+      {open && (
+        <div className="absolute top-full left-0 mt-1 w-64 rounded-xl border border-border bg-popover text-popover-foreground shadow-lg z-50 overflow-hidden">
+          <div className="px-3 py-2 border-b border-border">
+            <p className="text-[11px] font-bold text-muted-foreground uppercase tracking-wider">モデル選択</p>
+          </div>
+          <div className="py-1">
+            {aiModels.map((model) => (
+              <button
+                key={model.id}
+                onClick={() => {
+                  if (model.active) {
+                    onSelect(model.id);
+                    setOpen(false);
+                  } else {
+                    toast("このモデルは近日対応予定です");
+                  }
+                }}
+                className={cn(
+                  "w-full flex items-center gap-3 px-3 py-2.5 text-left transition-colors",
+                  model.active
+                    ? model.id === selectedModelId
+                      ? "bg-primary/8"
+                      : "hover:bg-muted/50"
+                    : "opacity-50 cursor-not-allowed"
+                )}
+              >
+                <div className={cn(
+                  "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 text-xs font-bold",
+                  model.active ? "bg-primary/10 text-primary" : "bg-muted text-muted-foreground"
+                )}>
+                  {model.active ? (
+                    <Sparkles className="w-4 h-4" />
+                  ) : (
+                    <Lock className="w-3.5 h-3.5" />
+                  )}
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className={cn(
+                      "text-xs font-semibold",
+                      model.id === selectedModelId ? "text-primary" : "text-foreground"
+                    )}>
+                      {model.name}
+                    </span>
+                    {!model.active && (
+                      <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-muted text-muted-foreground leading-none">
+                        Coming Soon
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {model.provider} — {model.description}
+                  </p>
+                </div>
+                {model.id === selectedModelId && model.active && (
+                  <Check className="w-4 h-4 text-primary shrink-0" />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const suggestions = [
   "例えば「AIバイアスの具体的な事例と対策を教えて」と聞いてみてください！",
@@ -306,6 +439,7 @@ export default function AIChatTab() {
   const [pendingButton, setPendingButton] = useState<PromptButton | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [apiError, setApiError] = useState<string | null>(null);
+  const [selectedModelId, setSelectedModelId] = useState("gemini-2.5-flash");
   const bottomRef = useRef<HTMLDivElement>(null);
 
   const activeSession = sessions.find((s) => s.id === activeSessionId) ?? null;
@@ -478,6 +612,11 @@ export default function AIChatTab() {
           <>
             {/* Chat Toolbar */}
             <div className="flex items-center gap-2 px-4 py-2 bg-accent/50 border-b border-border shrink-0">
+              <ModelSelector
+                selectedModelId={selectedModelId}
+                onSelect={setSelectedModelId}
+              />
+              <div className="w-px h-4 bg-border shrink-0" />
               <Info className="w-3.5 h-3.5 text-primary shrink-0" />
               <span className="text-xs text-muted-foreground">参照資料：</span>
               <div className="flex gap-1 flex-wrap flex-1">
