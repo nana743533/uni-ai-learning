@@ -1,7 +1,7 @@
 // ============================================================
 // AppLayout — 共通レイアウト（サイドバーなし・トップヘッダー構成）
 // Design: Academic Clarity
-// - トップヘッダー: ロゴ + コース名 + ロール切替 + ユーザー名
+// - トップヘッダー: ロゴ + 授業名 + デモ版バッジ + ロール切替 + ユーザー名
 // - メインコンテンツ: タブ付きパネル（全幅）
 // ============================================================
 import { BookOpen } from "lucide-react";
@@ -18,13 +18,20 @@ export default function AppLayout({ userRole, onRoleChange, children }: AppLayou
   return (
     <div className="flex flex-col h-screen overflow-hidden bg-background">
       {/* ── Top Header Bar ───────────────────────────────── */}
-      <header className="shrink-0 h-12 border-b border-border bg-sidebar flex items-center px-4 gap-4">
-        {/* Logo */}
-        <div className="flex items-center gap-2 shrink-0">
+      <header className="shrink-0 h-12 border-b border-border bg-sidebar flex items-center px-4 gap-3">
+        {/* Logo + Course Name + Demo Badge */}
+        <div className="flex items-center gap-2.5 shrink-0">
           <div className="w-7 h-7 rounded-md bg-primary flex items-center justify-center">
             <BookOpen className="w-3.5 h-3.5 text-primary-foreground" />
           </div>
-          <span className="text-sm font-bold text-foreground">UniAI</span>
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-bold text-foreground">UniAI</span>
+            <span className="text-muted-foreground text-xs select-none">/</span>
+            <span className="text-sm font-semibold text-foreground">情報社会と倫理</span>
+          </div>
+          <span className="px-1.5 py-0.5 rounded text-[10px] font-bold tracking-wide bg-amber-100 text-amber-700 border border-amber-200 uppercase leading-none select-none">
+            Demo
+          </span>
         </div>
 
         <div className="flex-1" />
