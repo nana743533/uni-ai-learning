@@ -53,3 +53,7 @@
 - [x] README.mdに発表資料（スライド画像）を追加
 - [x] README.mdにデモ画面のスクリーンショットを追加
 - [x] README.mdの画像URLをCDNからリポジトリ内相対パスに修正（GitHub表示対応）
+
+## 受賞情報
+
+- [x] README.mdにハッカソン受賞情報を追記（準優勝・Zeronity賞・エクサウィザーズ賞）

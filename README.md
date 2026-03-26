@@ -7,6 +7,18 @@
 
 ---
 
+## 受賞
+
+[AI Hackathon Origin 2026](https://www.craftstadium.com/hackathon/hackathon-origin-2026)（主催: 合同会社OneRise / 共催: 株式会社MATLyS、2026年3月24〜26日、大阪・QUINTBRIDGE）にて受賞。
+
+| 賞 | 授与企業・団体 |
+|---|---|
+| **準優勝** | 主催: 合同会社OneRise |
+| **Zeronity賞** | Zeronity株式会社 |
+| **エクサウィザーズ賞** | 株式会社エクサウィザーズ |
+
+---
+
 ## デモ画面
 
 ### 学生向け — AI相談
