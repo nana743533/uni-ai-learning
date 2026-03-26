@@ -13,25 +13,25 @@
 
 講義資料のみを参照するRAGチャット。Gemini 2.5 Flashが出典付きで回答します。
 
-![AI相談タブ](https://d2xsxph8kpxj0f.cloudfront.net/310519663469804593/jiRD9D4osLyjHhm2vUMayk/ai-chat-tab_53406f2d.png)
+![AI相談タブ](docs/images/ai-chat-tab.png)
 
 ### 学生向け — みんなのQ&A
 
 クラス全体で質問・回答・いいねを共有するフォーラム。同じ疑問を持つ仲間が可視化されます。
 
-![みんなのQ&A](https://d2xsxph8kpxj0f.cloudfront.net/310519663469804593/jiRD9D4osLyjHhm2vUMayk/qa-tab_ad7b487d.png)
+![みんなのQ&A](docs/images/qa-tab.png)
 
 ### 学生向け — 講義資料
 
 教授がアップロードした資料を授業回ごとに一覧表示。外部リンクで直接閲覧できます。
 
-![講義資料タブ](https://d2xsxph8kpxj0f.cloudfront.net/310519663469804593/jiRD9D4osLyjHhm2vUMayk/materials-tab_8f7524e0.png)
+![講義資料タブ](docs/images/materials-tab.png)
 
 ### 教授向け — RAG管理
 
 授業資料のアップロードとAIナレッジ対象のON/OFF制御。テキスト自動抽出でRAGに即反映されます。
 
-![教授ビュー](https://d2xsxph8kpxj0f.cloudfront.net/310519663469804593/jiRD9D4osLyjHhm2vUMayk/professor-view_f98b994a.png)
+![教授ビュー](docs/images/professor-view.png)
 
 ---
 
@@ -192,15 +192,15 @@ pnpm dev
 
 | # | タイトル | スライド |
 |---|---|---|
-| 1 | タイトル | ![Slide 1](https://d2xsxph8kpxj0f.cloudfront.net/310519663469804593/jiRD9D4osLyjHhm2vUMayk/slide_title_4cc2e137.png) |
-| 2 | AIを使っているのに、勉強が始まらない現実 | ![Slide 2](https://d2xsxph8kpxj0f.cloudfront.net/310519663469804593/jiRD9D4osLyjHhm2vUMayk/slide_problem_intro_948152eb.png) |
-| 3 | 今のAI活用を邪魔する3つの壁 | ![Slide 3](https://d2xsxph8kpxj0f.cloudfront.net/310519663469804593/jiRD9D4osLyjHhm2vUMayk/slide_three_walls_d9eb44c0.png) |
-| 4 | 講義完全最適化インフラ | ![Slide 4](https://d2xsxph8kpxj0f.cloudfront.net/310519663469804593/jiRD9D4osLyjHhm2vUMayk/slide_solution_overview_c9d33d73.png) |
-| 5 | デモ：AI相談 | ![Slide 5](https://d2xsxph8kpxj0f.cloudfront.net/310519663469804593/jiRD9D4osLyjHhm2vUMayk/slide_demo_ai_chat_87d6d6cd.png) |
-| 6 | デモ：みんなのQ&A | ![Slide 6](https://d2xsxph8kpxj0f.cloudfront.net/310519663469804593/jiRD9D4osLyjHhm2vUMayk/slide_demo_qa_6bdb31aa.png) |
-| 7 | 教授にとっての価値 | ![Slide 7](https://d2xsxph8kpxj0f.cloudfront.net/310519663469804593/jiRD9D4osLyjHhm2vUMayk/slide_professor_value_0336d598.png) |
-| 8 | 将来ビジョン | ![Slide 8](https://d2xsxph8kpxj0f.cloudfront.net/310519663469804593/jiRD9D4osLyjHhm2vUMayk/slide_future_vision_08713ef1.png) |
-| 9 | クロージング | ![Slide 9](https://d2xsxph8kpxj0f.cloudfront.net/310519663469804593/jiRD9D4osLyjHhm2vUMayk/slide_closing_70861d9e.png) |
+| 1 | タイトル | ![Slide 1](docs/images/slide_title.jpg) |
+| 2 | AIを使っているのに、勉強が始まらない現実 | ![Slide 2](docs/images/slide_problem_intro.jpg) |
+| 3 | 今のAI活用を邪魔する3つの壁 | ![Slide 3](docs/images/slide_three_walls.jpg) |
+| 4 | 講義完全最適化インフラ | ![Slide 4](docs/images/slide_solution_overview.jpg) |
+| 5 | デモ：AI相談 | ![Slide 5](docs/images/slide_demo_ai_chat.jpg) |
+| 6 | デモ：みんなのQ&A | ![Slide 6](docs/images/slide_demo_qa.jpg) |
+| 7 | 教授にとっての価値 | ![Slide 7](docs/images/slide_professor_value.jpg) |
+| 8 | 将来ビジョン | ![Slide 8](docs/images/slide_future_vision.jpg) |
+| 9 | クロージング | ![Slide 9](docs/images/slide_closing.jpg) |
 
 ---
 

@@ -52,3 +52,4 @@
 - [x] Manus依存部分の棚卸し・移行ガイド
 - [x] README.mdに発表資料（スライド画像）を追加
 - [x] README.mdにデモ画面のスクリーンショットを追加
+- [x] README.mdの画像URLをCDNからリポジトリ内相対パスに修正（GitHub表示対応）
