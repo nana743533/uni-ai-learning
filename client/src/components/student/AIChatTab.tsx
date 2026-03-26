@@ -282,8 +282,25 @@ function ChatSessionList({
 
 // ─── Main Component ──────────────────────────────────────────
 export default function AIChatTab() {
-  const [sessions, setSessions] = useState<ChatSession[]>([]);
-  const [activeSessionId, setActiveSessionId] = useState<number | null>(null);
+  // 初期セッションを即座に作成して入力欄を最初から表示する
+  const [initialSession] = useState<ChatSession>(() => {
+    const allIds = lectures.map((l) => l.id);
+    return {
+      id: Date.now(),
+      title: "無題",
+      selectedLectureIds: allIds,
+      messages: [
+        {
+          id: 0,
+          role: "ai" as const,
+          content:
+            `こんにちは！AI相談へようこそ。\n\n全${allIds.length}回の授業資料を参照対象に設定しました。右上の「設定」から参照する回を変更することもできます。\n\n${suggestions[0]}`,
+        },
+      ],
+    };
+  });
+  const [sessions, setSessions] = useState<ChatSession[]>([initialSession]);
+  const [activeSessionId, setActiveSessionId] = useState<number | null>(initialSession.id);
   const [showSettings, setShowSettings] = useState(false);
   const [input, setInput] = useState("");
   const [pendingButton, setPendingButton] = useState<PromptButton | null>(null);
