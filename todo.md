@@ -50,3 +50,5 @@
 - [x] README.md作成（GitHub用）
 - [x] 継続開発ロードマップドキュメント作成（Manus→Claude Code→AWS本番移行）
 - [x] Manus依存部分の棚卸し・移行ガイド
+- [x] README.mdに発表資料（スライド画像）を追加
+- [x] README.mdにデモ画面のスクリーンショットを追加
