@@ -1,6 +1,6 @@
 // ============================================================
 // Mock Data for UniAI — 大学授業特化型 学習支援AIアプリ
-// Design: Academic Clarity (Swiss International Style × Modern EdTech)
+// 授業：情報社会と倫理
 // ============================================================
 
 export type LectureStatus = "completed" | "current" | "upcoming";
@@ -51,23 +51,23 @@ export interface StudentFeedback {
 
 // ─── Lectures ───────────────────────────────────────────────
 export const lectures: Lecture[] = [
-  { id: 1, number: 1, title: "ガイダンス", subtitle: "1. ガイダンス", status: "completed" },
-  { id: 2, number: 2, title: "心理学の歴史（前編）", subtitle: "2. 心理学の歴史", status: "completed" },
-  { id: 3, number: 3, title: "心理学の歴史（後編）", subtitle: "3. 心理学の歴史", status: "completed" },
-  { id: 4, number: 4, title: "心理学の変わりゆく潮流", subtitle: "4. 心理学の変わりゆく...", status: "current" },
-  { id: 5, number: 5, title: "心理学の歴史とつながり", subtitle: "5. 心理学の歴史とつ...", status: "upcoming" },
-  { id: 6, number: 6, title: "心理学の統合を実践する", subtitle: "6. 心理学の統合を実...", status: "upcoming" },
-  { id: 7, number: 7, title: "心理学の統合性を探る", subtitle: "7. 心理学の統合性を...", status: "upcoming" },
-  { id: 8, number: 8, title: "心理学の実験", subtitle: "8. 心理学の実験", status: "upcoming" },
-  { id: 9, number: 9, title: "現代社会とより豊かな生活", subtitle: "9. 現代社会とより豊...", status: "upcoming" },
-  { id: 10, number: 10, title: "現代社会と心理学の統合", subtitle: "10. 現代社会と心理学の統合", status: "upcoming" },
+  { id: 1, number: 1, title: "イントロダクション", subtitle: "1. 情報社会とは何か", status: "completed" },
+  { id: 2, number: 2, title: "プライバシーとデータ保護", subtitle: "2. プライバシーとデータ保護", status: "completed" },
+  { id: 3, number: 3, title: "著作権とデジタルコンテンツ", subtitle: "3. 著作権とデジタルコンテンツ", status: "completed" },
+  { id: 4, number: 4, title: "AIと倫理", subtitle: "4. AIと倫理", status: "completed" },
+  { id: 5, number: 5, title: "デジタル市民権とネットリテラシー", subtitle: "5. デジタル市民権とネットリテラシー", status: "current" },
+  { id: 6, number: 6, title: "サイバーセキュリティと社会", subtitle: "6. サイバーセキュリティと社会", status: "upcoming" },
+  { id: 7, number: 7, title: "ビッグデータと監視社会", subtitle: "7. ビッグデータと監視社会", status: "upcoming" },
+  { id: 8, number: 8, title: "デジタルデバイドと情報格差", subtitle: "8. デジタルデバイドと情報格差", status: "upcoming" },
+  { id: 9, number: 9, title: "情報倫理の国際比較", subtitle: "9. 情報倫理の国際比較", status: "upcoming" },
+  { id: 10, number: 10, title: "情報社会の未来と私たちの責任", subtitle: "10. 情報社会の未来と私たちの責任", status: "upcoming" },
 ];
 
 // ─── Q&A Threads ────────────────────────────────────────────
 export const qaThreads: QAThread[] = [
   {
     id: 1,
-    lectureId: 1,
+    lectureId: 2,
     upvotes: 24,
     relevanceScore: 0.95,
     messages: [
@@ -76,29 +76,29 @@ export const qaThreads: QAThread[] = [
         role: "student",
         studentId: "Student A",
         content:
-          "授業で紹介された『社会的比較理論』ですが、SNSが普及した現代において、その影響はポジティブな面とネガティブな面、どちらが優勢だと考えられますか？具体的な事例もあれば教えてください。",
-        timestamp: "2024-10-01T10:15:00",
+          "個人情報保護法とGDPR（EU一般データ保護規則）の最大の違いは何ですか？日本で生活する私たちにGDPRは関係あるのでしょうか？",
+        timestamp: "2024-10-08T10:15:00",
       },
       {
         id: 2,
         role: "ai",
         content:
-          "興味深い質問ですね〜社会的比較理論はSNS時代にさらに重要性を増しています。ポジティブな面としては、自己研鑽のモチベーション向上（向上比較）があります。一方で、他者と比較しすぎて自己肯定感が低下する（下降比較の欠如、あるいは他人過剰比較による嫉妬など）ネガティブな影響も指摘されています（例えば、インスタグラムの『いいね』数への執着）。この点について、どう感じますか？",
-        timestamp: "2024-10-01T10:16:30",
+          "第2回の講義資料によると、個人情報保護法は日本国内の個人データを対象とするのに対し、GDPRはEU域内の個人データを扱うすべての組織に適用されます。つまり、日本企業でもEU市民のデータを扱う場合はGDPRの対象になります。また、GDPRは「忘れられる権利」や「データポータビリティ」など、より広範な権利を個人に認めている点が特徴的です。「プライバシーの3つの側面について詳しく教えて」と聞いてみてください！",
+        timestamp: "2024-10-08T10:16:30",
       },
       {
         id: 3,
         role: "student",
         studentId: "Student B",
-        content: "私もネガティブな影響を強く感じる〜ありがとう！",
+        content: "なるほど、越境データの問題は知らなかった。ありがとう！",
         upvotes: 24,
-        timestamp: "2024-10-01T10:20:00",
+        timestamp: "2024-10-08T10:20:00",
       },
     ],
   },
   {
     id: 2,
-    lectureId: 2,
+    lectureId: 4,
     upvotes: 18,
     relevanceScore: 0.91,
     messages: [
@@ -107,15 +107,15 @@ export const qaThreads: QAThread[] = [
         role: "student",
         studentId: "Student C",
         content:
-          "フロイトの精神分析理論は現代心理学でどのように評価されていますか？",
-        timestamp: "2024-10-08T11:00:00",
+          "AIバイアスの具体的な事例を教えてください。実際にどのような問題が起きていますか？",
+        timestamp: "2024-10-22T11:00:00",
       },
       {
         id: 5,
         role: "ai",
         content:
-          "フロイトの理論は現代では「科学的に検証困難」という批判を受けつつも、無意識・防衛機制・発達段階の概念は今も影響力を持っています。今回の資料では第2章でこの点が触れられていますよ。例えば「防衛機制の具体例をもっと教えて」と聞いてみてください！",
-        timestamp: "2024-10-08T11:01:15",
+          "第4回の講義資料によると、代表的な事例として、米国の刑事司法で使われたCOMPASシステムが黒人被告に対して再犯リスクを過大評価していた問題や、Amazonの採用AIが女性の応募者を不利に評価していた事例が挙げられています。これらはいずれも学習データに含まれる社会的偏見がAIに反映された結果です。「AIの説明責任（アカウンタビリティ）について教えて」と聞いてみてください！",
+        timestamp: "2024-10-22T11:01:15",
       },
     ],
   },
@@ -130,21 +130,21 @@ export const qaThreads: QAThread[] = [
         role: "student",
         studentId: "Student D",
         content:
-          "行動主義心理学と認知心理学の最大の違いは何ですか？",
+          "フェアユース（公正利用）と著作権侵害の境界線はどこにありますか？大学のレポートで他人の文章を引用する場合はどうなりますか？",
         timestamp: "2024-10-15T13:30:00",
       },
       {
         id: 7,
         role: "ai",
         content:
-          "行動主義は「観察可能な行動のみを研究対象」とするのに対し、認知心理学は「内部の思考プロセス・記憶・問題解決」も扱います。ワトソンとスキナーが行動主義の代表、ピアジェやミラーが認知心理学の先駆者です。「認知心理学の具体的な実験例を教えて」と聞いてみてください！",
+          "第3回の講義資料によると、フェアユースの判断には4つの要素（利用の目的・著作物の性質・利用の量・市場への影響）が考慮されます。大学のレポートでの引用は、出典を明記し、引用部分が従であり自分の論述が主であれば、日本の著作権法第32条の「引用」として認められます。ただし、丸写しや大量コピーは引用の範囲を超えるので注意が必要です。「クリエイティブ・コモンズ・ライセンスの種類を教えて」と聞いてみてください！",
         timestamp: "2024-10-15T13:31:40",
       },
     ],
   },
   {
     id: 4,
-    lectureId: 4,
+    lectureId: 5,
     upvotes: 9,
     relevanceScore: 0.85,
     messages: [
@@ -152,15 +152,15 @@ export const qaThreads: QAThread[] = [
         id: 8,
         role: "student",
         studentId: "Student E",
-        content: "ポジティブ心理学はいつ頃から注目されるようになったのですか？",
-        timestamp: "2024-10-22T10:00:00",
+        content: "フィルターバブルとエコーチェンバーの違いは何ですか？SNSを使う上で気をつけるべきことはありますか？",
+        timestamp: "2024-10-29T10:00:00",
       },
       {
         id: 9,
         role: "ai",
         content:
-          "ポジティブ心理学は1998年にマーティン・セリグマンがAPA会長就任演説で提唱したことで広まりました。従来の「問題の修正」から「強みの活用・幸福の増進」へのシフトが特徴です。「ウェルビーイングの5要素（PERMAモデル）を説明して」と聞いてみてください！",
-        timestamp: "2024-10-22T10:01:30",
+          "第5回の講義資料によると、フィルターバブルはアルゴリズムが個人の嗜好に合わせて情報を選別する現象で、エコーチェンバーは同じ意見を持つ人々の間で情報が反響・増幅される現象です。どちらも多様な視点に触れる機会を減少させます。対策としては、意識的に異なる立場のメディアに触れること、ファクトチェックの習慣をつけることが重要です。「デジタルリテラシーを高める具体的な方法を教えて」と聞いてみてください！",
+        timestamp: "2024-10-29T10:01:30",
       },
     ],
   },
@@ -169,32 +169,32 @@ export const qaThreads: QAThread[] = [
 // ─── RAG Documents ──────────────────────────────────────────
 export const ragDocuments: RAGDocument[] = [
   // 第1回
-  { id: 1, lectureId: 1, type: "pdf", title: "第1回 講義スライド（ガイダンス）", uploadedBy: "○○教授", aiEnabled: true },
-  { id: 2, lectureId: 1, type: "doc", title: "参考文献：デカルトの省察", uploadedBy: "○○教授", aiEnabled: true },
-  { id: 3, lectureId: 1, type: "web", title: "関連サイトリスト", uploadedBy: "○○教授", aiEnabled: false },
-  { id: 4, lectureId: 1, type: "pdf", title: "第1回 課題：自己分析レポート", uploadedBy: "○○教授", aiEnabled: true },
+  { id: 1, lectureId: 1, type: "pdf", title: "第1回 講義スライド（情報社会とは何か）", uploadedBy: "○○教授", aiEnabled: true },
+  { id: 2, lectureId: 1, type: "doc", title: "参考文献：情報社会論の系譜", uploadedBy: "○○教授", aiEnabled: true },
+  { id: 3, lectureId: 1, type: "web", title: "総務省 情報通信白書（外部リンク）", uploadedBy: "○○教授", aiEnabled: false },
+  { id: 4, lectureId: 1, type: "pdf", title: "第1回 課題：情報社会の身近な事例レポート", uploadedBy: "○○教授", aiEnabled: true },
   // 第2回
-  { id: 5, lectureId: 2, type: "pdf", title: "第2回 講義スライド（心理学の歴史・前編）", uploadedBy: "○○教授", aiEnabled: true },
-  { id: 6, lectureId: 2, type: "doc", title: "ヴントと構成主義の概要", uploadedBy: "○○教授", aiEnabled: true },
-  { id: 7, lectureId: 2, type: "web", title: "心理学史タイムライン（外部サイト）", uploadedBy: "○○教授", aiEnabled: false },
+  { id: 5, lectureId: 2, type: "pdf", title: "第2回 講義スライド（プライバシーとデータ保護）", uploadedBy: "○○教授", aiEnabled: true },
+  { id: 6, lectureId: 2, type: "doc", title: "個人情報保護法とGDPRの比較資料", uploadedBy: "○○教授", aiEnabled: true },
+  { id: 7, lectureId: 2, type: "web", title: "個人情報保護委員会（外部サイト）", uploadedBy: "○○教授", aiEnabled: false },
   // 第3回
-  { id: 8, lectureId: 3, type: "pdf", title: "第3回 講義スライド（心理学の歴史・後編）", uploadedBy: "○○教授", aiEnabled: true },
-  { id: 9, lectureId: 3, type: "pdf", title: "行動主義と認知心理学の比較資料", uploadedBy: "○○教授", aiEnabled: true },
+  { id: 8, lectureId: 3, type: "pdf", title: "第3回 講義スライド（著作権とデジタルコンテンツ）", uploadedBy: "○○教授", aiEnabled: true },
+  { id: 9, lectureId: 3, type: "pdf", title: "フェアユースとクリエイティブ・コモンズ解説資料", uploadedBy: "○○教授", aiEnabled: true },
   // 第4回
-  { id: 10, lectureId: 4, type: "pdf", title: "第4回 講義スライド（変わりゆく潮流）", uploadedBy: "○○教授", aiEnabled: true },
-  { id: 11, lectureId: 4, type: "doc", title: "ポジティブ心理学入門", uploadedBy: "○○教授", aiEnabled: true },
-  { id: 12, lectureId: 4, type: "web", title: "PERMAモデル解説サイト", uploadedBy: "○○教授", aiEnabled: false },
+  { id: 10, lectureId: 4, type: "pdf", title: "第4回 講義スライド（AIと倫理）", uploadedBy: "○○教授", aiEnabled: true },
+  { id: 11, lectureId: 4, type: "doc", title: "AIバイアスの事例集", uploadedBy: "○○教授", aiEnabled: true },
+  { id: 12, lectureId: 4, type: "web", title: "EU AI規制法の概要（外部サイト）", uploadedBy: "○○教授", aiEnabled: false },
 ];
 
 // ─── Student Feedback ───────────────────────────────────────
 export const studentFeedbacks: StudentFeedback[] = [
-  { id: 1, lectureId: 1, studentId: "Student A", rating: 5, comment: "「導入として分かりやすかったです。」", timestamp: "2024-10-01T15:00:00" },
+  { id: 1, lectureId: 1, studentId: "Student A", rating: 5, comment: "「情報社会の全体像がよく分かりました。」", timestamp: "2024-10-01T15:00:00" },
   { id: 2, lectureId: 1, studentId: "Student B", rating: 4, comment: "「AI相談機能で疑問がすぐ解消できてよかった。」", timestamp: "2024-10-01T15:30:00" },
-  { id: 3, lectureId: 1, studentId: "Student C", rating: 4, comment: "「みんなのQ&Aが参考になりました！」", timestamp: "2024-10-01T16:00:00" },
-  { id: 4, lectureId: 2, studentId: "Student D", rating: 5, comment: "「心理学の歴史が面白かった！」", timestamp: "2024-10-08T15:00:00" },
-  { id: 5, lectureId: 2, studentId: "Student E", rating: 3, comment: "「少し難しかったです。」", timestamp: "2024-10-08T15:30:00" },
-  { id: 6, lectureId: 3, studentId: "Student F", rating: 4, comment: "「資料が分かりやすかった。」", timestamp: "2024-10-15T15:00:00" },
-  { id: 7, lectureId: 4, studentId: "Student G", rating: 5, comment: "「AIのサポートが助かりました！」", timestamp: "2024-10-22T15:00:00" },
+  { id: 3, lectureId: 1, studentId: "Student C", rating: 4, comment: "「みんなのQ&Aで他の学生の視点が参考になりました！」", timestamp: "2024-10-01T16:00:00" },
+  { id: 4, lectureId: 2, studentId: "Student D", rating: 5, comment: "「プライバシーの3つの側面が整理されて理解しやすかった！」", timestamp: "2024-10-08T15:00:00" },
+  { id: 5, lectureId: 2, studentId: "Student E", rating: 3, comment: "「GDPRの部分が少し難しかったです。」", timestamp: "2024-10-08T15:30:00" },
+  { id: 6, lectureId: 3, studentId: "Student F", rating: 4, comment: "「著作権の具体例が分かりやすかった。」", timestamp: "2024-10-15T15:00:00" },
+  { id: 7, lectureId: 4, studentId: "Student G", rating: 5, comment: "「AIバイアスの事例が衝撃的でした。」", timestamp: "2024-10-22T15:00:00" },
 ];
 
 // ─── Stats ──────────────────────────────────────────────────
@@ -203,8 +203,8 @@ export const lectureStats = {
   totalEnrolled: 97,
   aiQuestions: 120,
   topQuestions: [
-    { topic: "履修方法について", count: 45 },
-    { topic: "心理学の定義", count: 25 },
-    { topic: "課題の提出期限", count: 20 },
+    { topic: "個人情報保護法とGDPR", count: 45 },
+    { topic: "AIバイアスの事例", count: 25 },
+    { topic: "著作権とフェアユース", count: 20 },
   ],
 };
